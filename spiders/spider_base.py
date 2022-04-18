@@ -44,7 +44,7 @@ class SpiderBase:
         self.app.app_start(self.package_name, stop=True)
 
     def get_all_text(self):
-        return [_.text.strip() for _ in self.xpath('//android.widget.TextView').all() if _.strip()]
+        return [_.text.strip() for _ in self.xpath('//android.widget.TextView').all() if _.text.strip()]
 
     def get_product_id(self, product_name):
         return hashlib.md5(product_name.encode('utf-8')).hexdigest()
