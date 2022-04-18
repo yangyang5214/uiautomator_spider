@@ -62,7 +62,7 @@ class SpiderWph(SpiderBase):
                 product_name = text  # 取最长的作为 product_name
 
             # 都是 1/6 1/5 之类的
-            if not image_size and "/" in text and len(text) < 4:
+            if not image_size and "/" in text and len(text) <= 4:  # 1/9 1/11 限制长度
                 image_size = int(text.split('/')[1])
             elif text.startswith('¥'):
                 prices.append(text)
@@ -77,24 +77,19 @@ class SpiderWph(SpiderBase):
             exit(-1)
 
         base_dir = self.base_dir(price_str, product_id)
-        result_path = SpiderBase.get_result_path(base_dir)
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
-        else:
-            if os.path.exists(result_path):
-                logging.info('hit cache ... skip. 🎉🎉🎉 。。。\n')
-                return
-
-        self.app.screenshot(os.path.join(base_dir, 'main.png'))
 
         if product_name and image_size == 0:
             # 可能是页面最下面点到了购物车
-            os.system("rm -rf {}".format(base_dir))
+            SpiderBase.run_system_cmd("rm -rf {}".format(base_dir))
+            logging.info('🎉🎉🎉 。。。skip 购物车 \n')
             return
 
         # image_cache
         _, result = SpiderBase.run_system_cmd("ls | grep png | wc -l")
         if int(result) < 3:
+            self.app.screenshot(os.path.join(base_dir, 'main.png'))
             logging.info('开始处理图片。。。image_size: {}'.format(image_size))
             for i in range(0, image_size - 1):
                 self.app.swipe(700, 300, 100, 300, 0.1)
