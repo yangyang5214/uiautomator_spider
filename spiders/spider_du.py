@@ -16,6 +16,10 @@ class SpiderDu(SpiderBase):
     package_name = 'com.shizhuang.duapp'
     page_list_xpath = '//*[@resource-id="com.shizhuang.duapp:id/recyclerView"]/android.view.ViewGroup'
 
+    watchers = [
+        '//*[@resource-id="com.shizhuang.duapp:id/iv_close"]'
+    ]
+
     def __init__(self, keyword):
         super().__init__(keyword)
 

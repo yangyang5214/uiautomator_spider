@@ -47,9 +47,7 @@ class SpiderWph(SpiderBase):
         return False
 
     def _process_item(self, price_str: str):
-        logging.info('start process new item.....')
         all_texts = self.get_all_text()
-
         sales = None
         prices = []
         image_size = 0

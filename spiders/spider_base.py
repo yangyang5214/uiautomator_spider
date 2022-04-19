@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -21,6 +22,7 @@ class SpiderBase:
     name = 'base'
     keyword = None
     package_name = None
+    activity = None
     prices = [0, 100, 500, 1000, 10000, 300000]
     home_dir = "/Users/beer/temp"
     page_limit = 10
@@ -33,15 +35,28 @@ class SpiderBase:
     start_price_xpath = None
     end_price_xpath = None
     product_choose_confirm_xpath = None
+    watchers = [
+
+    ]
 
     def __init__(self, keyword):
         self.keyword = keyword
         self.app = u2.connect()
-        self.app.app_start(self.package_name, stop=True)
+        self.app.app_start(self.package_name, stop=True, activity=self.activity)
         logging.info("Init uiautomator2 success，✈️️️")
+        for watcher in self.watchers:
+            self.app.watcher.when(watcher).click()
 
     def restart(self):
-        self.app.app_start(self.package_name, stop=True)
+        self.app.app_start(self.package_name, stop=True, activity=self.activity)
+
+    @staticmethod
+    def get_image_size(texts):
+        for _ in texts:
+            z = re.match("^[1-9]\d*\/[1-9]\d*$", _)
+            if z:
+                return int(z.group().split('/')[-1])
+        return 1
 
     def get_all_text(self):
         return [_.text.strip() for _ in self.xpath('//android.widget.TextView').all() if _.text.strip()]
@@ -53,10 +68,9 @@ class SpiderBase:
         time.sleep(seconds)
 
     def do_search_keyword(self):
+        logging.info("set text: {}".format(self.keyword))
         self.xpath(self.search_keyword_xpath).set_text(self.keyword)
-        self.sleep(1)
         self.xpath(self.search_keyword_confirm_xpath).click()
-        self.app.implicitly_wait(10 * 3)
 
     def click_sale(self, xpath):
         """
@@ -64,9 +78,8 @@ class SpiderBase:
         :param xpath:
         :return:
         """
+        logging.info("click sale desc ....")
         self.xpath(xpath).click()
-        self.sleep(1)
-        self.app.implicitly_wait(10 * 3)
 
     def range_price(self, start_price, end_price):
         # 展开 筛选 操作
@@ -106,13 +119,14 @@ class SpiderBase:
     def process_page_list(self, start_price, end_price):
         index = 0
         while index < self.page_limit:
-            self.sleep(3)
             temp_lists = self.xpath(self.page_list_xpath).all()
             for item in temp_lists:
                 if self.pass_item(item):
                     continue
                 item.click()
                 self.sleep(5)
+
+                logging.info('start process new item.....')
                 self._process_item("{}_{}".format(start_price, end_price))
                 self.return_pre()
             index += 1
@@ -124,7 +138,9 @@ class SpiderBase:
         return self.home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, price_str, product_id)
 
     def xpath(self, xpath):
-        return self.app.xpath(xpath)
+        elm = self.app.xpath(xpath)
+        self.sleep(1)
+        return elm
 
     @staticmethod
     def get_result_path(base_dir):
