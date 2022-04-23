@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import os
+import random
 import re
 import subprocess
 import time
@@ -39,10 +40,12 @@ class SpiderBase:
 
     ]
 
+    stop = True
+
     def __init__(self, keyword):
         self.keyword = keyword
         self.app = u2.connect()
-        self.app.app_start(self.package_name, stop=True, activity=self.activity)
+        self.app.app_start(self.package_name, stop=self.stop, activity=self.activity)
         logging.info("Init uiautomator2 success，✈️️️")
         for watcher in self.watchers:
             self.app.watcher.when(watcher).click()
@@ -61,11 +64,17 @@ class SpiderBase:
     def get_all_text(self):
         return [_.text.strip() for _ in self.xpath('//android.widget.TextView').all() if _.text.strip()]
 
-    def get_product_id(self, product_name):
+    @staticmethod
+    def get_product_id(product_name):
         return hashlib.md5(product_name.encode('utf-8')).hexdigest()
 
-    def sleep(self, seconds):
+    @staticmethod
+    def sleep(seconds):
         time.sleep(seconds)
+
+    @staticmethod
+    def sleep_random(start, end):
+        time.sleep(random.randint(start, end))
 
     def do_search_keyword(self):
         logging.info("set text: {}".format(self.keyword))
