@@ -13,12 +13,12 @@ class SpiderDingDong(SpiderBase):
     name = "dd"
     package_name = 'com.yaya.zone'
 
-    stop = False
+    stop = True
 
     def __init__(self, keyword):
         super().__init__(keyword)
 
-    def process(self):
+    def process_yun_li(self):
         """
         监控 运力
         :return:
@@ -29,11 +29,43 @@ class SpiderDingDong(SpiderBase):
             self.sleep_random(1, 3)
             if self.has_rider():
                 break
-        # play mac local mp3 file
-        os.system("afplay /Users/beer/vlog/mp3s/hai_bian.mp3")
+        self.alarm()
 
     def has_rider(self):
         tv_one_elm = self.xpath('//*[@resource-id="com.yaya.zone:id/tv_one"]')
         if tv_one_elm.exists and tv_one_elm.text == '由于近期疫情问题，配送运力紧张，本站点当前运力已约满':
             return False
         return True
+
+    def alarm(self):
+        # play mac local mp3 file
+        os.system("afplay /Users/beer/vlog/mp3s/hai_bian.mp3")
+
+    def process(self):
+        flag = True
+        while flag:
+            # 购物车
+            self.xpath('//*[@resource-id="com.yaya.zone:id/rl_car_layout"]').click()
+            # 去结算
+            self.xpath('//*[@resource-id="com.yaya.zone:id/btn_submit"]').click()
+            # 去支付
+            self.xpath('//*[@resource-id="com.yaya.zone:id/tv_submit"]').click()
+
+            logging.info("retry ................ 🚄")
+            all_rv_selected_hour = self.xpath('//*[@resource-id="com.yaya.zone:id/rv_selected_hour"]/android.view.ViewGroup/android.widget.TextView').all()
+            for index in range(1, len(all_rv_selected_hour), 2):
+                item = all_rv_selected_hour[index]
+                logging.info("text: {}".format(item.text))
+                if '已约满' not in item.text:
+                    try:
+                        item.click()
+                        self.xpath('//*[@resource-id="com.yaya.zone:id/tv_submit"]').click()
+                    except:
+                        pass
+                    flag = False
+                    break
+            if flag:
+                self.xpath('//*[@resource-id="com.yaya.zone:id/iv_dialog_select_time_close"]').click()
+                self.sleep_random(1, 5)
+            self.return_pre()
+        self.alarm()
