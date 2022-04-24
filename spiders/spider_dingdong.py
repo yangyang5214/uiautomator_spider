@@ -44,15 +44,20 @@ class SpiderDingDong(SpiderBase):
     def process(self):
         flag = True
         while flag:
+            logging.info("retry ................ 🚄")
             # 购物车
             self.xpath('//*[@resource-id="com.yaya.zone:id/rl_car_layout"]').click()
             # 去结算
             self.xpath('//*[@resource-id="com.yaya.zone:id/btn_submit"]').click()
             # 去支付
             self.xpath('//*[@resource-id="com.yaya.zone:id/tv_submit"]').click()
+            all_rv_selected_hour_elm = self.xpath('//*[@resource-id="com.yaya.zone:id/rv_selected_hour"]/android.view.ViewGroup/android.widget.TextView')
+            while not all_rv_selected_hour_elm.exists:
+                # 去支付
+                self.xpath('//*[@resource-id="com.yaya.zone:id/tv_submit"]').click()
+                all_rv_selected_hour_elm = self.xpath('//*[@resource-id="com.yaya.zone:id/rv_selected_hour"]/android.view.ViewGroup/android.widget.TextView')
 
-            logging.info("retry ................ 🚄")
-            all_rv_selected_hour = self.xpath('//*[@resource-id="com.yaya.zone:id/rv_selected_hour"]/android.view.ViewGroup/android.widget.TextView').all()
+            all_rv_selected_hour = all_rv_selected_hour_elm.all()
             for index in range(1, len(all_rv_selected_hour), 2):
                 item = all_rv_selected_hour[index]
                 logging.info("text: {}".format(item.text))
@@ -65,7 +70,5 @@ class SpiderDingDong(SpiderBase):
                     flag = False
                     break
             if flag:
-                self.xpath('//*[@resource-id="com.yaya.zone:id/iv_dialog_select_time_close"]').click()
-                self.sleep_random(1, 5)
-            self.return_pre()
+                self.return_pre(2)
         self.alarm()

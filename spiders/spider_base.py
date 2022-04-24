@@ -117,13 +117,14 @@ class SpiderBase:
         logging.info("run_system_cmd: {}, success!".format(cmd))
         return True, out.decode('utf-8').strip()
 
-    def return_pre(self):
+    def return_pre(self, times=1):
         """
         返回上一页
         :return:
         """
-        self.app.swipe(0, 600, 300, 600, 0.1)
-        self.sleep(1)
+        for i in range(times):
+            self.app.swipe(0, 600, 300, 600, 0.1)
+            self.sleep(1)
 
     def process_page_list(self, start_price, end_price):
         index = 0
