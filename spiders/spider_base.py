@@ -8,6 +8,7 @@ import random
 import re
 import subprocess
 import time
+import uuid
 
 import uiautomator2 as u2
 
@@ -52,6 +53,10 @@ class SpiderBase:
 
     def restart(self):
         self.app.app_start(self.package_name, stop=True, activity=self.activity)
+
+    @staticmethod
+    def uuid():
+        return str(uuid.uuid4())
 
     @staticmethod
     def get_image_size(texts):
@@ -123,8 +128,23 @@ class SpiderBase:
         :return:
         """
         for i in range(times):
-            self.app.swipe(0, 600, 300, 600, 0.1)
-            self.sleep(1)
+            self.swipe_right()
+
+    def swipe_left(self):
+        """
+        左滑
+        :return:
+        """
+        self.app.swipe(300, 600, 0, 600, 0.1)
+        self.sleep(1)
+
+    def swipe_right(self):
+        """
+        右滑
+        :return:
+        """
+        self.app.swipe(0, 600, 300, 600, 0.1)
+        self.sleep(1)
 
     def process_page_list(self, start_price, end_price):
         index = 0
@@ -135,22 +155,35 @@ class SpiderBase:
                     continue
                 item.click()
                 self.sleep(5)
-
                 logging.info('start process new item.....')
-                self._process_item("{}_{}".format(start_price, end_price))
+                if start_price and end_price:
+                    self._process_item("{}_{}".format(start_price, end_price))
+                else:
+                    self._process_item(None)
                 self.return_pre()
             index += 1
             # 向下滑动
             self.app.swipe(300, 1000, 300, 400, 0.08)
             self.app.implicitly_wait(10)
 
-    def base_dir(self, price_str: str, product_id: str):
-        return self.home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, price_str, product_id)
+    def base_dir(self, price_str, product_id):
+        if price_str:
+            result = self.home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, price_str, product_id)
+        else:
+            result = self.home_dir + "/{}/{}/{}".format(self.name, self.keyword, product_id)
+        os.makedirs(result, exist_ok=True)
+        return result
 
     def xpath(self, xpath):
         elm = self.app.xpath(xpath)
         self.sleep(1)
         return elm
+
+    def xpath_text(self, xpath):
+        elm = self.app.xpath(xpath)
+        self.sleep(1)
+        if elm.exists:
+            return elm.text
 
     @staticmethod
     def get_result_path(base_dir):
