@@ -58,6 +58,10 @@ class SpiderBase:
     def uuid():
         return str(uuid.uuid4())
 
+    def screen_deubg(self):
+        self.app.screenshot(os.path.join('debug.png'))
+        exit(-1)
+
     @staticmethod
     def get_image_size(texts):
         for _ in texts:
@@ -138,6 +142,14 @@ class SpiderBase:
         self.app.swipe(300, 600, 0, 600, 0.1)
         self.sleep(1)
 
+    def swipe_down(self):
+        """
+        下滑
+        :return:
+        """
+        self.app.swipe(300, 1000, 300, 400, 0.08)
+        self.sleep(3)
+
     def swipe_right(self):
         """
         右滑
@@ -184,6 +196,17 @@ class SpiderBase:
         self.sleep(1)
         if elm.exists:
             return elm.text
+
+    def xpath_text_by_swipe(self, xpath):
+        elm = self.app.xpath(xpath)
+        index = 0
+        while not elm.exists:
+            index = index + 1
+            self.app.swipe(300, 800, 300, 400, 0.1)
+            elm = self.app.xpath(xpath)
+            if index > 10:
+                return
+        return elm.text
 
     @staticmethod
     def get_result_path(base_dir):
