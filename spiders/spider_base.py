@@ -7,18 +7,32 @@ import os
 import random
 import re
 import subprocess
+import sys
 import time
 import uuid
+from datetime import datetime
 from sys import exit
 
 import uiautomator2 as u2
 
 logging.basicConfig(
-    format='',
-    level=logging.INFO
+    format='%(asctime)s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %I:%M:%S',
 )
 
-logging = logging.getLogger()
+log = logging.getLogger()
+
+consoleHandler = logging.StreamHandler(sys.stdout)
+log.addHandler(consoleHandler)
+
+home_dir = os.path.join(os.path.expanduser('~'), "uiautomator_spider")
+if not os.path.exists(home_dir):
+    os.makedirs(home_dir, exist_ok=True)
+
+fileName = datetime.now().strftime('%Y-%m-%d')
+fileHandler = logging.FileHandler("{}/{}.log".format(home_dir, fileName))
+log.addHandler(fileHandler)
 
 
 class SpiderBase:
@@ -27,7 +41,6 @@ class SpiderBase:
     package_name = None
     activity = None
     prices = [0, 100, 500, 1000, 10000, 300000]
-    home_dir = "/Users/beer/temp"
     page_limit = 10
 
     search_keyword_xpath = None
@@ -186,9 +199,9 @@ class SpiderBase:
 
     def base_dir(self, price_str, product_id):
         if price_str:
-            result = self.home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, price_str, product_id)
+            result = home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, price_str, product_id)
         else:
-            result = self.home_dir + "/{}/{}/{}".format(self.name, self.keyword, product_id)
+            result = home_dir + "/{}/{}/{}".format(self.name, self.keyword, product_id)
         os.makedirs(result, exist_ok=True)
         return result
 

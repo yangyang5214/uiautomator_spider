@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pyinstaller -F spider_main.py -y
+pyinstaller -F -w spider_main.py -y

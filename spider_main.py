@@ -6,14 +6,17 @@ from PyQt5.QtWidgets import QMainWindow, QLabel, QLineEdit, QComboBox, QMessageB
 from PyQt5.QtWidgets import QPushButton
 from future.moves import sys
 
-from spiders.spider_base import SpiderBase, logging
+from spiders.spider_base import SpiderBase, u2
+from spiders.spider_base import log as logging
+
+version = '0.0.1'
 
 
 class SpiderWindow(QMainWindow):
     def __init__(self, all_spiders):
         QMainWindow.__init__(self)
-        self.resize(400, 200)
-        self.setWindowTitle("uiautomator_spider")
+        self.resize(600, 200)
+        self.setWindowTitle("uiautomator_spider({})".format(version))
 
         self.keyword_label = QLabel(self)
         self.keyword_label.setText("平台: ")
@@ -31,12 +34,13 @@ class SpiderWindow(QMainWindow):
         self.keyword_label.move(200, 20)
 
         self.keyword_line = QLineEdit(self)
+        self.keyword_line.resize(300, 30)
         self.keyword_line.move(250, 15)
 
         self.btn_run = QPushButton('run', self)
         self.btn_run.clicked.connect(self.run)
         self.btn_run.resize(80, 40)
-        self.btn_run.move(150, 100)
+        self.btn_run.move(300, 100)
         self.current_spider = self.all_spiders[0]
 
     def selected(self, index):
@@ -44,11 +48,18 @@ class SpiderWindow(QMainWindow):
 
     def run(self):
         text = self.keyword_line.text()
-        if not text:
+        all_text = [_ for _ in text.split(" ") if _.strip()]
+        if not all_text:
             QMessageBox.critical(self, "⚠️", "请输入关键词")
         else:
-            logging.info("spider: {}, keyword: {}".format(self.current_spider, text))
-            main(spider_map.get(self.current_spider, SpiderBase)(text))
+            try:
+                u2.connect()
+            except:
+                QMessageBox.critical(self, "⚠️", "未检测到手机设备")
+                return
+            logging.info("spider: {}, keyword: {}".format(self.current_spider, all_text))
+            for k in all_text:
+                main(spider_map.get(self.current_spider, SpiderBase)(k))
 
 
 def main(spider: SpiderBase):
