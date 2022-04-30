@@ -9,6 +9,7 @@ import re
 import subprocess
 import time
 import uuid
+from sys import exit
 
 import uiautomator2 as u2
 
@@ -45,7 +46,12 @@ class SpiderBase:
 
     def __init__(self, keyword):
         self.keyword = keyword
-        self.app = u2.connect()
+        try:
+            self.app = u2.connect()
+        except:
+            logging.info("Can't find any android device. exit")
+            exit(-1)
+
         self.app.app_start(self.package_name, stop=self.stop, activity=self.activity)
         logging.info("Init uiautomator2 success，✈️️️")
         for watcher in self.watchers:
