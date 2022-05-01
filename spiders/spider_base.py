@@ -11,28 +11,25 @@ import sys
 import time
 import uuid
 from datetime import datetime
-from sys import exit
 
 import uiautomator2 as u2
 
-logging.basicConfig(
-    format='%(asctime)s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %I:%M:%S',
-)
-
 log = logging.getLogger()
 
-consoleHandler = logging.StreamHandler(sys.stdout)
-log.addHandler(consoleHandler)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+log.addHandler(console_handler)
 
 home_dir = os.path.join(os.path.expanduser('~'), "uiautomator_spider")
 if not os.path.exists(home_dir):
     os.makedirs(home_dir, exist_ok=True)
 
-fileName = datetime.now().strftime('%Y-%m-%d')
-fileHandler = logging.FileHandler("{}/{}.log".format(home_dir, fileName))
-log.addHandler(fileHandler)
+filename = datetime.now().strftime('%Y-%m-%d')
+file_handler = logging.FileHandler("{}/{}.log".format(home_dir, filename))
+file_handler.setFormatter(formatter)
+log.addHandler(file_handler)
 
 
 class SpiderBase:
@@ -63,23 +60,30 @@ class SpiderBase:
             self.app = u2.connect()
         except:
             logging.info("Can't find any android device. exit")
-            exit(-1)
+            sys.exit(-1)
 
-        self.app.app_start(self.package_name, stop=self.stop, activity=self.activity)
+        self.restart()
         logging.info("Init uiautomator2 success，✈️️️")
         for watcher in self.watchers:
             self.app.watcher.when(watcher).click()
 
     def restart(self):
         self.app.app_start(self.package_name, stop=True, activity=self.activity)
+        self.sleep(20)  # 等待 app 重启，取决于设备性能，设置久一点
+
+    @staticmethod
+    def _error(msg):
+        log.error(msg)
+        sys.exit()
 
     @staticmethod
     def uuid():
         return str(uuid.uuid4())
 
-    def screen_deubg(self):
-        self.app.screenshot(os.path.join('debug.png'))
-        exit(-1)
+    def screen_debug(self):
+        file_name = os.path.join(home_dir, self.uuid() + '.png')
+        self.app.screenshot(file_name)
+        return file_name
 
     @staticmethod
     def get_image_size(texts):
@@ -209,6 +213,12 @@ class SpiderBase:
         elm = self.app.xpath(xpath)
         self.sleep(1)
         return elm
+
+    def xpaths(self, xpaths):
+        for _xpath in xpaths:
+            elm = self.xpath(_xpath)
+            if elm.exists:
+                return elm
 
     def xpath_text(self, xpath):
         elm = self.app.xpath(xpath)

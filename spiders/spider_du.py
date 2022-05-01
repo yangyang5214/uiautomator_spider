@@ -4,7 +4,7 @@ import logging
 import os
 import random
 
-from spiders.spider_base import SpiderBase
+from spiders.spider_base import SpiderBase, log
 
 """
 du spider
@@ -24,10 +24,15 @@ class SpiderDu(SpiderBase):
         super().__init__(keyword)
 
     def _process_keyword(self, start_price, end_price):
-        self.sleep(5)
-        # 主页面的搜索
+        log.info("尝试点击购买标签")
+        rbtn_mall = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/rbtn_mall"]')
+        if rbtn_mall.exists:
+            rbtn_mall.click()
+        else:
+            self._error("Can't find rbtn_mall, exit. {}'".format(self.screen_debug()))
+
+        log.info("尝试输入关键词: {}".format(self.keyword))
         search = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/fvSearch"]')
-        # 副页面搜索
         keyword_search = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/laySearchContent"]')
         if search.exists:
             search.set_text(self.keyword)
@@ -39,15 +44,15 @@ class SpiderDu(SpiderBase):
         self.xpath('//*[@resource-id="com.shizhuang.duapp:id/tvComplete"]').click()
         self.app.implicitly_wait(10 * 3)
 
-        # 按照销量排序
+        log.info("点击【销量】排序按钮")
         self.xpath('//*[@text="累计销量"]').click()
         self.app.implicitly_wait(10 * 3)
         self.sleep(1)
 
-        # 展开 筛选 操作
+        log.info("展开 【筛选】 操作")
         self.xpath('//*[@text="筛选"]').click()
 
-        # 输入 【start_price， end_price】
+        log.info("输入 【start_price:{}】【end_price:{}】".format(start_price, end_price))
         self.xpath(
             '//*[@resource-id="com.shizhuang.duapp:id/layMenuFilterView"]/android.widget.RelativeLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]') \
             .set_text(str(start_price))
@@ -63,7 +68,7 @@ class SpiderDu(SpiderBase):
         tv_confirm = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/tvConfirm"]')
         tv_confirm.click()
 
-        self.process_page_list(self.page_list_xpath, start_price, end_price)
+        self.process_page_list(start_price, end_price)
 
     def _process_item(self, price_str: str):
         logging.info('start process new item.....')
@@ -100,8 +105,7 @@ class SpiderDu(SpiderBase):
         if product_name:
             product_id = hashlib.md5(product_name.encode('utf-8')).hexdigest()
         else:
-            logging.info(all_texts)
-            exit(-1)
+            self._error("Can't find product_name. all_texts: {}'".format(all_texts))
 
         base_dir = self.base_dir(price_str, product_id)
         result_path = SpiderBase.get_result_path(base_dir)

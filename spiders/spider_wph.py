@@ -72,7 +72,7 @@ class SpiderWph(SpiderBase):
             product_id = self.get_product_id(product_name)
         else:
             logging.error(all_texts)
-            exit(-1)
+            sys.exit(-1)
 
         base_dir = self.base_dir(price_str, product_id)
         if not os.path.exists(base_dir):
