@@ -40,7 +40,7 @@ class SpiderXhs(SpiderBase):
         self.xpath(sort_xpath).click()
         self.process_page_list(sort_key, None)
 
-    def process_page_list(self, sort_key, end_price):
+    def process_page_list(self, sort_key, _):
         index = 0
         while index < self.page_limit:
             temp_lists = self.xpath(self.page_list_xpath).all()

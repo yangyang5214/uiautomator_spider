@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import os
 
-from spiders.spider_base import SpiderBase, logging
+from spiders.spider_base import SpiderBase, log
 
 """
 wph spider
@@ -20,6 +20,10 @@ class SpiderWph(SpiderBase):
     end_price_xpath = '//*[@resource-id="com.achievo.vipshop:id/max_price_range"]'
     product_choose_confirm_xpath = '//*[@resource-id="com.achievo.vipshop:id/btn_confirm"]'
     page_list_xpath = '//*[@resource-id="com.achievo.vipshop:id/product_list_content_container"]//android.widget.RelativeLayout//android.widget.ImageView'
+
+    watchers = [
+        '//*[@resource-id="com.achievo.vipshop:id/ll_button"]'  # 我知道了按钮
+    ]
 
     def __init__(self, keyword):
         super().__init__(keyword)
@@ -71,8 +75,8 @@ class SpiderWph(SpiderBase):
         if product_name:
             product_id = self.get_product_id(product_name)
         else:
-            logging.error(all_texts)
-            sys.exit(-1)
+            # todo 继续处理，而不是结束
+            self._error("Cannot find product_name. {}".format(self.screen_debug()))
 
         base_dir = self.base_dir(price_str, product_id)
         if not os.path.exists(base_dir):
@@ -81,14 +85,14 @@ class SpiderWph(SpiderBase):
         if product_name and image_size == 0:
             # 可能是页面最下面点到了购物车
             SpiderBase.run_system_cmd("rm -rf {}".format(base_dir))
-            logging.info('🎉🎉🎉 。。。skip 购物车 \n')
+            log.info('🎉🎉🎉 。。。skip 购物车 \n')
             return
 
         # image_cache
         _, result = SpiderBase.run_system_cmd("ls | grep png | wc -l")
         if int(result) < 3:
             self.app.screenshot(os.path.join(base_dir, 'main.png'))
-            logging.info('开始处理图片。。。image_size: {}'.format(image_size))
+            log.info('开始处理图片。。。image_size: {}'.format(image_size))
             for i in range(0, image_size - 1):
                 self.app.swipe(700, 300, 100, 300, 0.1)
                 self.sleep(3)
@@ -104,14 +108,14 @@ class SpiderWph(SpiderBase):
 
             for i in range(1, image_size - 1):
                 self.app.swipe(100, 300, 700, 300, 0.1)
-                logging.info("swipe...{}".format(i))
+                log.info("swipe...{}".format(i))
                 self.sleep(3)
                 image_name = os.path.join(base_dir, str(i) + '.png')
                 self.app.screenshot(image_name)
                 image_names.append(os.path.basename(image_name))
             self.return_pre()
         else:
-            logging.info("use image cache... skip image")
+            log.info("use image cache... skip image")
 
         # 获取 评价数量
         for i in range(10):  # 最大尝试 10 次

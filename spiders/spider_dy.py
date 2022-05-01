@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import os
 
-from spiders.spider_base import SpiderBase, logging
+from spiders.spider_base import SpiderBase, log
 
 """
 dou_yin spider
@@ -26,16 +26,17 @@ class SpiderDy(SpiderBase):
 
     watchers = [
         '//*[@resource-id="com.ss.android.ugc.aweme:id/tv_cancel"]',
+        '//*[@resource-id="com.ss.android.ugc.aweme:id/c9k"]'
     ]
 
     def __init__(self, keyword):
         super().__init__(keyword)
 
     def _process_keyword(self, start_price, end_price):
-        logging.info('click 我 btn...')
+        log.info('click 【我】 btn...')
         self.xpath('//*[@resource-id="com.ss.android.ugc.aweme:id/root_view"]/android.widget.FrameLayout[5]').click()
 
-        logging.info('click 抖音商城 btn...')
+        log.info('click 【抖音商城】 btn...')
         self.xpath('//*[@resource-id="com.ss.android.ugc.aweme:id/j67"]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.ImageView[1]').click()
 
         self.do_search_keyword()
@@ -58,7 +59,7 @@ class SpiderDy(SpiderBase):
     def _process_item(self, price_str: str):
         product_name_elm = self.xpath('//*[@resource-id="com.ss.android.ugc.aweme:id/6y"]')
         if not product_name_elm.exists:
-            logging.info("可能是 视频链接 。。。skip")
+            log.info("可能是 视频链接 。。。skip")
             return
         product_name = product_name_elm.text
         product_id = self.get_product_id(product_name)
@@ -68,7 +69,7 @@ class SpiderDy(SpiderBase):
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
         elif os.path.exists(result_path):
-            logging.info('hit cache ... skip')
+            log.info('hit cache ... skip')
             return
 
         all_texts = self.get_all_text()
@@ -103,7 +104,7 @@ class SpiderDy(SpiderBase):
 
         for i in range(1, image_size - 1):
             self.app.swipe(700, 300, 100, 300, 0.1)
-            logging.info("swipe...{}".format(i))
+            log.info("swipe...{}".format(i))
             self.sleep(3)
             image_name = os.path.join(base_dir, str(i) + '.png')
             self.app.screenshot(image_name)

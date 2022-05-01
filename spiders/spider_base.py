@@ -14,17 +14,21 @@ from datetime import datetime
 
 import uiautomator2 as u2
 
-log = logging.getLogger()
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(formatter)
-log.addHandler(console_handler)
+logging.basicConfig(
+    level=logging.INFO
+)
 
 home_dir = os.path.join(os.path.expanduser('~'), "uiautomator_spider")
 if not os.path.exists(home_dir):
     os.makedirs(home_dir, exist_ok=True)
+
+log = logging.getLogger()
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+log.addHandler(console_handler)
 
 filename = datetime.now().strftime('%Y-%m-%d')
 file_handler = logging.FileHandler("{}/{}.log".format(home_dir, filename))
@@ -105,7 +109,11 @@ class SpiderBase:
         time.sleep(seconds)
 
     @staticmethod
-    def sleep_random(start, end):
+    def sleep_random(start=None, end=None):
+        if not start:
+            start = 1
+        if not end:
+            end = 5
         time.sleep(random.randint(start, end))
 
     def do_search_keyword(self):
