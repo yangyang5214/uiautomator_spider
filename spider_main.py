@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
 import argparse
+import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QLabel, QLineEdit, QComboBox, QMessageBox
 from PyQt5.QtWidgets import QPushButton
-from future.moves import sys
 
 from spiders.spider_base import SpiderBase, u2
 from spiders.spider_base import log as logging
