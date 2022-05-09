@@ -42,7 +42,7 @@ class SpiderBase:
     package_name = None
     activity = None
     prices = [0, 100, 500, 1000, 10000, 300000]
-    page_limit = 30
+    page_limit = 40
 
     search_keyword_xpath = None
     search_keyword_confirm_xpath = None
@@ -98,8 +98,10 @@ class SpiderBase:
                 return int(z.group().split('/')[-1])
         return 1
 
-    def get_all_text(self):
-        return [_.text.strip() for _ in self.xpath('//android.widget.TextView').all() if _.text.strip()]
+    def get_all_text(self, xpath=None):
+        if not xpath:
+            xpath = '//android.widget.TextView'
+        return [_.text.strip() for _ in self.xpath(xpath).all() if _.text.strip()]
 
     @staticmethod
     def get_product_id(product_name):

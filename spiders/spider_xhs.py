@@ -21,7 +21,7 @@ class SpiderXhs(SpiderBase):
         '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
 
-    page_limit = 20
+    page_limit = 60
 
     def process(self):
         for sort_key, sort_xpath in self.sort_items.items():
@@ -52,6 +52,22 @@ class SpiderXhs(SpiderBase):
                     self.return_pre()
             index += 1
             self.swipe_down()
+
+    def get_auth_info(self):
+        self.xpath('//*[@resource-id="com.xingin.xhs:id/avatarLayout"]').click()
+        cyq = self.get_all_text('//*[@resource-id="com.xingin.xhs:id/cyq"]/android.view.ViewGroup[3]//*')
+        extra_info = []
+        if cyq:
+            extra_info = cyq[:6]  # 关注/粉丝/点赞
+        data = {
+            'nickname': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dqs"]'),
+            '_id': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dqt"]'),
+            'desc': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/fih"]'),
+            'tag_info': self.get_all_text('//*[@resource-id="com.xingin.xhs:id/cyh"]//*'),
+            'extra_info': extra_info
+        }
+        self.return_pre()
+        return data
 
     def _process_item(self, price_str):
         title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dcg"]')
@@ -99,6 +115,7 @@ class SpiderXhs(SpiderBase):
             'comment_count': comment_count,
             'like_count': like_count,
             'collect_count': collect_count,
+            'auth_info': self.get_auth_info(),
         }
         self.save_result(base_dir, data)
         return True
