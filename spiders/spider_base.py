@@ -42,7 +42,7 @@ class SpiderBase:
     package_name = None
     activity = None
     prices = [0, 100, 500, 1000, 10000, 300000]
-    page_limit = 10
+    page_limit = 30
 
     search_keyword_xpath = None
     search_keyword_confirm_xpath = None
