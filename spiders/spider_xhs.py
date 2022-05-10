@@ -54,7 +54,11 @@ class SpiderXhs(SpiderBase):
             self.swipe_down()
 
     def get_auth_info(self):
-        self.xpath('//*[@resource-id="com.xingin.xhs:id/avatarLayout"]').click()
+        avatar_layout = self.xpath('//*[@resource-id="com.xingin.xhs:id/avatarLayout"]')
+        if avatar_layout.exists:
+            avatar_layout.click()
+        else:
+            return {}
         cyq = self.get_all_text('//*[@resource-id="com.xingin.xhs:id/cyq"]/android.view.ViewGroup[3]//*')
         extra_info = []
         if cyq:
@@ -83,7 +87,6 @@ class SpiderXhs(SpiderBase):
         logging.info("result: {}".format(base_dir))
         self.app.screenshot(os.path.join(base_dir, 'main.png'))
 
-        nickname = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/nickNameTV"]')
         like_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dbt"]')
         collect_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dam"]')
         comment_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/das"]')
@@ -108,7 +111,6 @@ class SpiderXhs(SpiderBase):
         last_update = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/dc2"]')
 
         data = {
-            'nickname': nickname,
             'title': title,
             'content': content,
             'last_update': last_update,
