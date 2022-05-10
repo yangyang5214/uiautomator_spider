@@ -16,9 +16,9 @@ class SpiderXhs(SpiderBase):
 
     # 三种排序方式：
     sort_items = {
-        '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
-        '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
-        '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
+        'zong_he': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
+        'zui_re': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
+        'zui_xin': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
 
     page_limit = 60
@@ -82,14 +82,18 @@ class SpiderXhs(SpiderBase):
                     return True
             return False
 
+        like_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dbt"]')
+        if not like_count:
+            logging.info("可能是个广告内容, skip")
+            return True
+
+        collect_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dam"]')
+        comment_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/das"]')
+
         product_id = self.get_product_id(title)
         base_dir = self.base_dir(price_str, product_id)
         logging.info("result: {}".format(base_dir))
         self.app.screenshot(os.path.join(base_dir, 'main.png'))
-
-        like_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dbt"]')
-        collect_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dam"]')
-        comment_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/das"]')
 
         if os.path.exists(self.get_result_path(base_dir)):
             logging.info("cache... skip\n")

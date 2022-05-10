@@ -60,7 +60,7 @@ class SpiderBase:
 
     def __init__(self, keyword):
         self.keyword = keyword
-        self.index = 1
+        self._index = 1
         try:
             self.app = u2.connect()
         except:
@@ -253,11 +253,11 @@ class SpiderBase:
         return os.path.join(base_dir, 'result.json')
 
     def save_result(self, base_dir, data):
-        data['index'] = self.index
+        data['_index'] = self._index
         with open(self.get_result_path(base_dir), 'w') as f:
             json.dump(data, f, ensure_ascii=False)
         logging.info('🎉🎉🎉 。。。\n')
-        self.index = self.index + 1
+        self._index = self._index + 1
 
     def process(self):
         price_len = len(self.prices)
