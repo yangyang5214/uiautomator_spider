@@ -14,7 +14,7 @@ if __name__ == '__main__':
     app = u2.connect()
     # app.app_start('com.xingin.xhs', stop=False)
 
-    app.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.widget.FrameLayout')
+    app.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.widget.FrameLayout//android.view.View')
     all_text = get_all_text(app, '//*[@resource-id="com.xingin.xhs:id/cyn"]')
     # app.swipe(300, 1000, 300, 400, 0.08)
     # print()

@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import hashlib
-import logging
 import os
 import random
 
@@ -71,7 +70,7 @@ class SpiderDu(SpiderBase):
         self.process_page_list(start_price, end_price)
 
     def _process_item(self, price_str: str):
-        logging.info('start process new item.....')
+        log.info('start process new item.....')
         self.sleep(random.randint(1, 3))
 
         all_text = self.xpath('//android.widget.TextView').all()
@@ -98,7 +97,7 @@ class SpiderDu(SpiderBase):
                 sales = text
 
         if not prices:
-            logging.info(all_texts)
+            log.info(all_texts)
             return False
 
         product_id = None
@@ -113,16 +112,16 @@ class SpiderDu(SpiderBase):
             os.makedirs(base_dir)
         else:
             if os.path.exists(result_path):
-                logging.info('hit cache ... skip')
+                log.info('hit cache ... skip')
                 return True  # local cache
 
         self.app.screenshot(os.path.join(base_dir, 'main.png'))
 
-        logging.info('开始处理图片。。。image_size: {}'.format(image_size))
+        log.info('开始处理图片。。。image_size: {}'.format(image_size))
         for i in range(0, image_size - image_size_start - 1):
             self.app.swipe(700, 300, 100, 300, 0.1)
             self.sleep(3)
-            logging.info("swipe...{}".format(i))
+            log.info("swipe...{}".format(i))
 
         self.app.click(300, 300)
         self.sleep(0.5)
@@ -135,7 +134,7 @@ class SpiderDu(SpiderBase):
 
         for i in range(1, image_size - 1):
             self.app.swipe(100, 300, 700, 300, 0.1)
-            logging.info("swipe...{}".format(i))
+            log.info("swipe...{}".format(i))
             self.sleep(3)
             image_name = os.path.join(base_dir, str(i) + '.png')
             self.app.screenshot(image_name)

@@ -2,7 +2,7 @@
 
 import os
 
-from spiders.spider_base import SpiderBase, logging
+from spiders.spider_base import SpiderBase, log as logging
 
 """
 dou_yin spider

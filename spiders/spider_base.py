@@ -14,10 +14,6 @@ from datetime import datetime
 
 import uiautomator2 as u2
 
-logging.basicConfig(
-    level=logging.INFO
-)
-
 home_dir = os.path.join(os.path.expanduser('~'), "uiautomator_spider")
 if not os.path.exists(home_dir):
     os.makedirs(home_dir, exist_ok=True)
@@ -64,11 +60,11 @@ class SpiderBase:
         try:
             self.app = u2.connect()
         except:
-            logging.info("Can't find any android device. exit")
+            log.info("Can't find any android device. exit")
             sys.exit(-1)
 
         self.restart()
-        logging.info("Init uiautomator2 success，✈️️️")
+        log.info("Init uiautomator2 success，✈️️️")
         for watcher in self.watchers:
             self.app.watcher.when(watcher).click()
 
@@ -88,6 +84,7 @@ class SpiderBase:
     def screen_debug(self):
         file_name = os.path.join(home_dir, self.uuid() + '.png')
         self.app.screenshot(file_name)
+        log.info("debug: {}".format(file_name))
         return file_name
 
     @staticmethod
@@ -120,7 +117,7 @@ class SpiderBase:
         time.sleep(random.randint(start, end))
 
     def do_search_keyword(self):
-        logging.info("set text: {}".format(self.keyword))
+        log.info("set text: {}".format(self.keyword))
         self.xpath(self.search_keyword_xpath).set_text(self.keyword)
         self.xpath(self.search_keyword_confirm_xpath).click()
 
@@ -130,7 +127,7 @@ class SpiderBase:
         :param xpath:
         :return:
         """
-        logging.info("click sale desc ....")
+        log.info("click sale desc ....")
         self.xpath(xpath).click()
 
     def range_price(self, start_price, end_price):
@@ -155,9 +152,9 @@ class SpiderBase:
     def run_system_cmd(cmd):
         out, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()
         if error:
-            logging.error("run_system_cmd: {}, error: {}".format(cmd, error))
+            log.error("run_system_cmd: {}, error: {}".format(cmd, error))
             return False, None
-        logging.info("run_system_cmd: {}, success!".format(cmd))
+        log.info("run_system_cmd: {}, success!".format(cmd))
         return True, out.decode('utf-8').strip()
 
     def return_pre(self, times=1):
@@ -189,8 +186,9 @@ class SpiderBase:
         右滑
         :return:
         """
+        self.sleep(1.5)
         self.app.swipe(0, 600, 300, 600, 0.1)
-        self.sleep(1)
+        self.sleep(1.5)
 
     def process_page_list(self, start_price, end_price):
         index = 0
@@ -201,7 +199,7 @@ class SpiderBase:
                     continue
                 item.click()
                 self.sleep(5)
-                logging.info('start process new item.....')
+                log.info('start process new item.....')
                 if start_price and end_price:
                     self._process_item("{}_{}".format(start_price, end_price))
                 else:
@@ -210,7 +208,6 @@ class SpiderBase:
             index += 1
             # 向下滑动
             self.app.swipe(300, 1000, 300, 400, 0.08)
-            self.app.implicitly_wait(10)
 
     def base_dir(self, price_str, product_id):
         if price_str:
@@ -221,9 +218,7 @@ class SpiderBase:
         return result
 
     def xpath(self, xpath):
-        elm = self.app.xpath(xpath)
-        self.sleep(1)
-        return elm
+        return self.app.xpath(xpath)
 
     def xpaths(self, xpaths):
         for _xpath in xpaths:
@@ -238,14 +233,16 @@ class SpiderBase:
             return elm.text
 
     def xpath_text_by_swipe(self, xpath):
-        elm = self.app.xpath(xpath)
+        elm = self.xpath(xpath)
         index = 0
         while not elm.exists:
             index = index + 1
+            # 往下滑动
             self.app.swipe(300, 800, 300, 400, 0.1)
-            elm = self.app.xpath(xpath)
+            elm = self.xpath(xpath)
             if index > 10:
-                return
+                return ''
+            log.info("swipe index %d".format(index))
         return elm.text
 
     @staticmethod
@@ -256,8 +253,8 @@ class SpiderBase:
         data['_index'] = self._index
         with open(self.get_result_path(base_dir), 'w') as f:
             json.dump(data, f, ensure_ascii=False)
-        logging.info('🎉🎉🎉 。。。\n')
-        self._index = self._index + 1
+        log.info('🎉🎉🎉 。。。\n')
+        self._index += 1
 
     def process(self):
         price_len = len(self.prices)
