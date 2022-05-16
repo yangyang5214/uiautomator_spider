@@ -45,13 +45,6 @@ class SpiderXhs(SpiderBase):
             pass
         self.process_page_list(sort_key, None)
 
-    def pass_item(self, item):
-        y = item.rect[1]
-        if y < 150:
-            logging.info("隐藏在其他文本下面，跳过")
-            return True
-        return False
-
     def process_page_list(self, sort_key, _):
         while self._index < 100:  # 每个取100
             temp_lists = self.xpath(self.page_list_xpath).all()

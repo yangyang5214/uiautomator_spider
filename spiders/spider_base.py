@@ -18,6 +18,10 @@ home_dir = os.path.join(os.path.expanduser('~'), "uiautomator_spider")
 if not os.path.exists(home_dir):
     os.makedirs(home_dir, exist_ok=True)
 
+logging.basicConfig(
+    level=logging.INFO
+)
+
 log = logging.getLogger()
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -38,7 +42,9 @@ class SpiderBase:
     package_name = None
     activity = None
     prices = [0, 100, 500, 1000, 10000, 300000]
-    page_limit = 40
+    item_limit = 50
+
+    cached_item = 0  # 提前退出条件，没达到 item_limit 的限制下
 
     search_keyword_xpath = None
     search_keyword_confirm_xpath = None
@@ -146,6 +152,10 @@ class SpiderBase:
         self.xpath(self.product_choose_confirm_xpath).click()
 
     def pass_item(self, item):
+        y = item.rect[1]
+        if y < 150:
+            logging.info("可能是隐藏在其他文本下面，跳过")
+            return True
         return False
 
     @staticmethod
@@ -170,8 +180,8 @@ class SpiderBase:
         左滑
         :return:
         """
-        self.app.swipe(300, 600, 0, 600, 0.1)
-        self.sleep(1)
+        self.app.swipe(600, 600, 0, 600, 0.08)
+        self.sleep(2)
 
     def swipe_down(self):
         """
@@ -191,21 +201,30 @@ class SpiderBase:
         self.sleep(1.5)
 
     def process_page_list(self, start_price, end_price):
-        index = 0
-        while index < self.page_limit:
+        while self._index < self.item_limit or self.cached_item > 20:
             temp_lists = self.xpath(self.page_list_xpath).all()
+            if not temp_lists:
+                return
             for item in temp_lists:
                 if self.pass_item(item):
                     continue
+
+                click_before = len(self.get_all_text())
                 item.click()
+                click_after = len(self.get_all_text())
+                if click_before == click_after:
+                    logging.info('点击跳转失败，skip')
+                    continue
+
                 self.sleep(5)
                 log.info('start process new item.....')
                 if start_price and end_price:
                     self._process_item("{}_{}".format(start_price, end_price))
                 else:
                     self._process_item(None)
-                self.return_pre()
-            index += 1
+                # 不是列表页再返回
+                if not self.xpath(self.page_list_xpath).all():
+                    self.return_pre()
             # 向下滑动
             self.app.swipe(300, 1000, 300, 400, 0.08)
 
@@ -255,13 +274,18 @@ class SpiderBase:
             json.dump(data, f, ensure_ascii=False)
         log.info('🎉🎉🎉 。。。\n')
         self._index += 1
+        self.sleep_random(5, 10)
+        self.cached_item -= 1
 
     def process(self):
-        price_len = len(self.prices)
-        for index in range(price_len - 1):
-            start_price = self.prices[index]
-            end_price = self.prices[index + 1] + 1
-            self._process_keyword(start_price, end_price)
+        if self.prices:
+            for index in range(len(self.prices) - 1):
+                start_price = self.prices[index]
+                end_price = self.prices[index + 1] + 1
+                self._process_keyword(start_price, end_price)
+                self.restart()
+        else:
+            self._process_keyword('', '')
             self.restart()
 
     def _process_item(self, price_str):

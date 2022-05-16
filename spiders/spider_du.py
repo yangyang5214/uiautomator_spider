@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
-import hashlib
 import os
 import random
+import re
 
 from spiders.spider_base import SpiderBase, log
 
@@ -14,17 +14,23 @@ class SpiderDu(SpiderBase):
     name = "du"
     package_name = 'com.shizhuang.duapp'
     page_list_xpath = '//*[@resource-id="com.shizhuang.duapp:id/recyclerView"]/android.view.ViewGroup'
+    item_limit = 80
 
     watchers = [
         '//*[@resource-id="com.shizhuang.duapp:id/iv_close"]'
     ]
+
+    prices = [100, 1000]
 
     def __init__(self, keyword):
         super().__init__(keyword)
 
     def _process_keyword(self, start_price, end_price):
         log.info("尝试点击购买标签")
-        rbtn_mall = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/rbtn_mall"]')
+        rbtn_mall = self.xpaths([
+            '//*[@resource-id="com.shizhuang.duapp:id/rbtn_mall"]',
+            '//*[@resource-id="com.shizhuang.duapp:id/tab_mall"]'
+        ])
         if rbtn_mall.exists:
             rbtn_mall.click()
         else:
@@ -40,38 +46,34 @@ class SpiderDu(SpiderBase):
 
         self.sleep(1)
 
+        log.info("点击【搜索】按钮")
         self.xpath('//*[@resource-id="com.shizhuang.duapp:id/tvComplete"]').click()
-        self.app.implicitly_wait(10 * 3)
 
         log.info("点击【销量】排序按钮")
         self.xpath('//*[@text="累计销量"]').click()
-        self.app.implicitly_wait(10 * 3)
-        self.sleep(1)
 
-        log.info("展开 【筛选】 操作")
-        self.xpath('//*[@text="筛选"]').click()
+        if start_price:
+            log.info("展开 【筛选】 操作")
+            self.xpath('//*[@text="筛选"]').click()
+            log.info("输入 【start_price:{}】【end_price:{}】".format(start_price, end_price))
+            self.xpath(
+                '//*[@resource-id="com.shizhuang.duapp:id/layMenuFilterView"]/android.widget.RelativeLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]') \
+                .set_text(str(start_price))
+            self.sleep(random.random() * 3)
+            self.xpath(
+                '//*[@resource-id="com.shizhuang.duapp:id/layMenuFilterView"]/android.widget.RelativeLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[2]') \
+                .set_text(str(end_price))
 
-        log.info("输入 【start_price:{}】【end_price:{}】".format(start_price, end_price))
-        self.xpath(
-            '//*[@resource-id="com.shizhuang.duapp:id/layMenuFilterView"]/android.widget.RelativeLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]') \
-            .set_text(str(start_price))
-        self.sleep(random.random() * 3)
-        self.xpath(
-            '//*[@resource-id="com.shizhuang.duapp:id/layMenuFilterView"]/android.widget.RelativeLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/androidx.recyclerview.widget.RecyclerView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[2]') \
-            .set_text(str(end_price))
+            # https://www.cnblogs.com/yoyoketang/p/10850591.html 隐藏键盘
+            self.app.press(4)
 
-        # https://www.cnblogs.com/yoyoketang/p/10850591.html 隐藏键盘
-        self.app.press(4)
-
-        # 确认按钮
-        tv_confirm = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/tvConfirm"]')
-        tv_confirm.click()
+            # 确认按钮
+            self.xpath('//*[@resource-id="com.shizhuang.duapp:id/tvConfirm"]').click()
 
         self.process_page_list(start_price, end_price)
 
     def _process_item(self, price_str: str):
         log.info('start process new item.....')
-        self.sleep(random.randint(1, 3))
 
         all_text = self.xpath('//android.widget.TextView').all()
         all_texts = [_.text.strip() for _ in all_text]
@@ -88,23 +90,26 @@ class SpiderDu(SpiderBase):
                 product_name = text  # 取最长的作为 product_name
 
             # 都是 1/6 1/5 之类的
-            if not image_size and "/" in text:
-                image_size_start = int(text.split('/')[0])
-                image_size = int(text.split('/')[1])
+            if not image_size and re.match('^\d+/\d+$', text):
+                arr = text.split('/')
+                image_size_start = int(arr[0])
+                image_size = int(arr[1])
             elif text.startswith('¥'):
                 prices.append(text)
             elif '付款' in text and '想要' in text:
                 sales = text
 
-        if not prices:
-            log.info(all_texts)
-            return False
+        if not prices and not image_size:
+            # 提前结束
+            self.screen_debug()
+            exit()
 
         product_id = None
         if product_name:
-            product_id = hashlib.md5(product_name.encode('utf-8')).hexdigest()
+            product_id = self.get_product_id(product_name + str(prices))  # 以 product_name + price 确定唯一性
         else:
-            self._error("Can't find product_name. all_texts: {}'".format(all_texts))
+            self.screen_debug()
+            exit()
 
         base_dir = self.base_dir(price_str, product_id)
         result_path = SpiderBase.get_result_path(base_dir)
@@ -113,35 +118,25 @@ class SpiderDu(SpiderBase):
         else:
             if os.path.exists(result_path):
                 log.info('hit cache ... skip')
-                return True  # local cache
+                self.cached_item += 1
+                return
 
         self.app.screenshot(os.path.join(base_dir, 'main.png'))
 
         log.info('开始处理图片。。。image_size: {}'.format(image_size))
-        for i in range(0, image_size - image_size_start - 1):
-            self.app.swipe(700, 300, 100, 300, 0.1)
-            self.sleep(3)
-            log.info("swipe...{}".format(i))
 
-        self.app.click(300, 300)
-        self.sleep(0.5)
-
-        image_names = []
-
-        image_name = os.path.join(base_dir, '0.png')
+        image_name = os.path.join(base_dir, 'main.png')
         self.app.screenshot(image_name)
-        image_names.append(os.path.basename(image_name))
 
-        for i in range(1, image_size - 1):
-            self.app.swipe(100, 300, 700, 300, 0.1)
-            log.info("swipe...{}".format(i))
-            self.sleep(3)
-            image_name = os.path.join(base_dir, str(i) + '.png')
-            self.app.screenshot(image_name)
-            image_names.append(os.path.basename(image_name))
-
-        self.sleep(1)
-        self.app.click(500, 500)
+        for i in range(image_size_start, image_size):
+            self.swipe_left()
+            image_name = os.path.join(base_dir, str(i - image_size_start) + '.png')
+            elm = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/pullLayout"]//android.widget.ImageView')
+            if elm.exists:
+                elm.screenshot().save(image_name)
+            else:
+                self.screen_debug()
+                exit()
 
         data = {
             'product_id': product_id,
@@ -151,4 +146,3 @@ class SpiderDu(SpiderBase):
             'sales': sales,
         }
         self.save_result(base_dir, data)
-        return True
