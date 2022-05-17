@@ -16,8 +16,8 @@ class SpiderXhs(SpiderBase):
 
     # 三种排序方式：
     sort_items = {
-        # '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
-        # '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
+        '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
+        '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
         '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
 
@@ -40,7 +40,7 @@ class SpiderXhs(SpiderBase):
 
         try:
             # 筛选图文
-            self.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]').click()
+            self.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]').click()
         except:
             pass
         self.process_page_list(sort_key, None)
@@ -63,11 +63,20 @@ class SpiderXhs(SpiderBase):
                 self._process_item(sort_key)
                 self.return_pre(times=1)
             self.swipe_down()
+            # 再次判断当前页面是详情，再次返回
+            buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
+            if buk.exists and buk.text.startswith('说点什么'):
+                logging.info("二次判断是详情页,再次返回")
+                self.swipe_down()
 
     def get_auth_info(self):
         logging.info("开始获取个人信息。。。start")
         # 点击头像进入个人主页
-        self.xpath('//*[@resource-id="com.xingin.xhs:id/avatarLayout"]').click()
+        avatar_layout = self.xpath('//*[@resource-id="com.xingin.xhs:id/avatarLayout"]')
+        if avatar_layout.exists:
+            avatar_layout.click()
+        else:
+            return {}
         cyq = self.get_all_text('//*[@resource-id="com.xingin.xhs:id/cyq"]/android.view.ViewGroup[3]//*')
         extra_info = []
         if cyq:
@@ -84,7 +93,7 @@ class SpiderXhs(SpiderBase):
         return data
 
     def _process_item(self, price_str):
-        self.sleep(3)
+        self.sleep_random(3, 10)
 
         buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
         if not buk.exists or not buk.text.startswith('说点什么'):
@@ -121,6 +130,7 @@ class SpiderXhs(SpiderBase):
                 image_elm.screenshot().save(image_name)
             if index != image_size - 1:
                 self.swipe_left()
+            self.sleep_random()
 
         logging.info("image save end ...")
 

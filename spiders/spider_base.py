@@ -25,11 +25,6 @@ logging.basicConfig(
 log = logging.getLogger()
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(formatter)
-log.addHandler(console_handler)
-
 filename = datetime.now().strftime('%Y-%m-%d')
 file_handler = logging.FileHandler("{}/{}.log".format(home_dir, filename))
 file_handler.setFormatter(formatter)
@@ -201,7 +196,8 @@ class SpiderBase:
         self.sleep(1.5)
 
     def process_page_list(self, start_price, end_price):
-        while self._index < self.item_limit or self.cached_item > 20:
+        while self._index < self.item_limit:
+            log.info("cached_item: {}".format(self.cached_item))
             temp_lists = self.xpath(self.page_list_xpath).all()
             if not temp_lists:
                 return
@@ -225,7 +221,10 @@ class SpiderBase:
                 # 不是列表页再返回
                 if not self.xpath(self.page_list_xpath).all():
                     self.return_pre()
-            # 向下滑动
+
+                if self.cached_item > 20:
+                    return
+                    # 向下滑动
             self.app.swipe(300, 1000, 300, 400, 0.08)
 
     def base_dir(self, price_str, product_id):
@@ -261,7 +260,7 @@ class SpiderBase:
             elm = self.xpath(xpath)
             if index > 10:
                 return ''
-            log.info("swipe index %d".format(index))
+            log.info(f"swipe index {index} ...")
         return elm.text
 
     @staticmethod
@@ -274,8 +273,9 @@ class SpiderBase:
             json.dump(data, f, ensure_ascii=False)
         log.info('🎉🎉🎉 。。。\n')
         self._index += 1
-        self.sleep_random(5, 10)
-        self.cached_item -= 1
+        self.sleep_random(10, 20)
+        if self.cached_item > 0:
+            self.cached_item -= 1
 
     def process(self):
         if self.prices:

@@ -44,7 +44,7 @@ class SpiderDu(SpiderBase):
         elif keyword_search.exists:
             keyword_search.set_text(self.keyword)
 
-        self.sleep(1)
+        self.sleep(3)
 
         log.info("点击【搜索】按钮")
         self.xpath('//*[@resource-id="com.shizhuang.duapp:id/tvComplete"]').click()
@@ -117,7 +117,7 @@ class SpiderDu(SpiderBase):
             os.makedirs(base_dir)
         else:
             if os.path.exists(result_path):
-                log.info('hit cache ... skip')
+                log.info(f'hit cache ... skip {self.cached_item}')
                 self.cached_item += 1
                 return
 
