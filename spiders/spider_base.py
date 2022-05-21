@@ -37,7 +37,7 @@ class SpiderBase:
     package_name = None
     activity = None
     prices = [0, 100, 500, 1000, 10000, 300000]
-    item_limit = 50
+    item_limit = 80
 
     cached_item = 0  # 提前退出条件，没达到 item_limit 的限制下
 
@@ -91,7 +91,7 @@ class SpiderBase:
     @staticmethod
     def get_image_size(texts):
         for _ in texts:
-            z = re.match("^[1-9]\d*\/[1-9]\d*$", _)
+            z = re.match("^[1-9]\d*\/[1-9]\d*$", str(_))
             if z:
                 return int(z.group().split('/')[-1])
         return 1
@@ -176,7 +176,7 @@ class SpiderBase:
         :return:
         """
         self.app.swipe(600, 600, 0, 600, 0.08)
-        self.sleep(2)
+        self.sleep_random()
 
     def swipe_down(self):
         """
@@ -184,7 +184,7 @@ class SpiderBase:
         :return:
         """
         self.app.swipe(300, 1000, 300, 400, 0.08)
-        self.sleep(3)
+        self.sleep_random()
 
     def swipe_right(self):
         """
@@ -269,6 +269,7 @@ class SpiderBase:
 
     def save_result(self, base_dir, data):
         data['_index'] = self._index
+        data['create_time'] = int(time.time())
         with open(self.get_result_path(base_dir), 'w') as f:
             json.dump(data, f, ensure_ascii=False)
         log.info('🎉🎉🎉 。。。\n')

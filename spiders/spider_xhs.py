@@ -16,7 +16,7 @@ class SpiderXhs(SpiderBase):
 
     # 三种排序方式：
     sort_items = {
-        '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
+        # '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
         '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
         '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
@@ -67,7 +67,7 @@ class SpiderXhs(SpiderBase):
             buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
             if buk.exists and buk.text.startswith('说点什么'):
                 logging.info("二次判断是详情页,再次返回")
-                self.swipe_down()
+                self.return_pre()
 
     def get_auth_info(self):
         logging.info("开始获取个人信息。。。start")
@@ -130,7 +130,6 @@ class SpiderXhs(SpiderBase):
                 image_elm.screenshot().save(image_name)
             if index != image_size - 1:
                 self.swipe_left()
-            self.sleep_random()
 
         logging.info("image save end ...")
 
