@@ -14,6 +14,12 @@ if __name__ == '__main__':
     app = u2.connect()
     # app.app_start('com.xingin.xhs', stop=False)
 
+    app.screenshot().save('1.png')
+
+    with open('2.png', 'wb') as f:
+        f.write(app.screenshot(format="raw"))
+    exit()
+
     all_text = get_all_text(app)
     # app.swipe(300, 1000, 300, 400, 0.08)
     # print()

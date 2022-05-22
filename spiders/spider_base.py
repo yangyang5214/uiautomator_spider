@@ -227,13 +227,21 @@ class SpiderBase:
                     # 向下滑动
             self.app.swipe(300, 1000, 300, 400, 0.08)
 
-    def base_dir(self, price_str, product_id):
-        if price_str:
-            result = home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, price_str, product_id)
+    def base_dir(self, sub_dir, product_id):
+        if sub_dir:
+            result = home_dir + "/{}/{}/{}/{}".format(self.name, self.keyword, sub_dir, product_id)
         else:
             result = home_dir + "/{}/{}/{}".format(self.name, self.keyword, product_id)
         os.makedirs(result, exist_ok=True)
         return result
+
+    def _update_index(self, sub_dir=None):
+        if sub_dir:
+            dir_path = home_dir + "/{}/{}/{}".format(self.name, self.keyword, sub_dir)
+        else:
+            dir_path = home_dir + "/{}/{}".format(self.name, self.keyword)
+        if os.path.exists(dir_path):
+            self._index = len(os.listdir(dir_path))
 
     def xpath(self, xpath):
         return self.app.xpath(xpath)

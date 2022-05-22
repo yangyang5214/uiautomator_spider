@@ -8,6 +8,8 @@ class SpiderTb(SpiderBase):
     name = "tb"
     package_name = 'com.taobao.taobao'
 
+    page_list_xpath = '//*[@resource-id="com.taobao.taobao:id/libsf_srp_header_list_recycler"]/android.widget.FrameLayout'
+
     watchers = [
         '//*[@resource-id="com.taobao.taobao:id/update_imageview_cancel_v2"]'  # 更新软件的取消按钮
     ]
@@ -44,24 +46,36 @@ class SpiderTb(SpiderBase):
             self.app.xpath('//*[@text="自定最低价"]').set_text(str(start_price))
             self.app.xpath('//*[@text="自定最高价"]').set_text(str(end_price))
         except:
-            pass
+            log.error("")
+            exit()
 
         self.sleep(1)
 
         self.app.xpath('//*[@content-desc="关闭筛选"]').click()
 
-        while self._index < self.item_limit:
+        sub_dir = "{}_{}".format(start_price, end_price)
+
+        while True:
             self.sleep(3)
-            temp_lists = self.app.xpath('//*[@resource-id="com.taobao.taobao:id/libsf_srp_header_list_recycler"]/android.widget.FrameLayout').all()
+            temp_lists = self.app.xpath(self.page_list_xpath).all()
+            pre_len = len(temp_lists)
             for item in temp_lists:
+                if self._index > self.item_limit:
+                    return
                 if item.text:
                     continue  # 应该是搜索词，跳过
                 item.click()
-                self.process_item("{}_{}".format(start_price, end_price))
-                self.return_pre()
+                self.process_item(sub_dir)
+                while True:
+                    if len(self.app.xpath(self.page_list_xpath).all()) != pre_len:  # 只要没回到列表页，就再次返回
+                        log.info("try return pre ...")
+                        self.return_pre()
+                    else:
+                        break
+
             self.swipe_down()
 
-    def process_item(self, price_str: str):
+    def process_item(self, sub_dir: str):
         log.info(f'start process new item..... index: {self._index}')
         self.sleep_random()
 
@@ -88,13 +102,16 @@ class SpiderTb(SpiderBase):
             elif text.startswith('月销'):
                 sales = text
 
+        if not prices:
+            return
+
         product_id = None
         if product_name:
             product_id = self.get_product_id(product_name)
         else:
             self._error("Cannot get product_name, {}".format(self.screen_debug()))
 
-        base_dir = self.base_dir(price_str, product_id)
+        base_dir = self.base_dir(sub_dir, product_id)
         result_json = self.get_result_path(base_dir)
         if os.path.exists(result_json):
             log.info("cache... skip\n")

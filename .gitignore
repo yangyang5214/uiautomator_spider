@@ -137,3 +137,4 @@ build
 
 *exe
 *.sh
+**/.DS_Store
