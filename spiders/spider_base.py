@@ -148,7 +148,7 @@ class SpiderBase:
 
     def pass_item(self, item):
         y = item.rect[1]
-        if y < 150:
+        if y < 300:
             logging.info("可能是隐藏在其他文本下面，跳过")
             return True
         return False
@@ -235,13 +235,14 @@ class SpiderBase:
         os.makedirs(result, exist_ok=True)
         return result
 
-    def _update_index(self, sub_dir=None):
+    def get_current_count(self, sub_dir=None):
         if sub_dir:
             dir_path = home_dir + "/{}/{}/{}".format(self.name, self.keyword, sub_dir)
         else:
             dir_path = home_dir + "/{}/{}".format(self.name, self.keyword)
         if os.path.exists(dir_path):
-            self._index = len(os.listdir(dir_path))
+            return len(os.listdir(dir_path))
+        return -1
 
     def xpath(self, xpath):
         return self.app.xpath(xpath)
@@ -277,7 +278,7 @@ class SpiderBase:
 
     def save_result(self, base_dir, data):
         data['_index'] = self._index
-        data['create_time'] = int(time.time())
+        data['ts'] = int(time.time())
         with open(self.get_result_path(base_dir), 'w') as f:
             json.dump(data, f, ensure_ascii=False)
         log.info('🎉🎉🎉 。。。\n')

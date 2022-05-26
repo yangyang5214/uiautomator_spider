@@ -16,10 +16,12 @@ class SpiderXhs(SpiderBase):
 
     # 三种排序方式：
     sort_items = {
-        # '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
+        '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
         '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
         '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
+
+    item_limit = 80
 
     def process(self):
         for sort_key, sort_xpath in self.sort_items.items():
@@ -38,36 +40,43 @@ class SpiderXhs(SpiderBase):
 
         self.xpath(sort_xpath).click()
 
-        try:
-            # 筛选图文
-            self.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]').click()
-        except:
-            pass
+        logging.info("click 图文。。。")
+
+        # 筛选图文
+        tu_wen = self.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]')
+        if tu_wen.exists:
+            tu_wen.click()
+        else:
+            exit()
+
         self.process_page_list(sort_key, None)
 
     def process_page_list(self, sort_key, _):
-        while self._index < 100:  # 每个取100
+        while True:
+            current_count = self.get_current_count(sort_key)
+            logging.info(f"current_count: {current_count}")
+            if current_count > self.item_limit:
+                break
             temp_lists = self.xpath(self.page_list_xpath).all()
+            pre_len = len(temp_lists)
             for item in temp_lists:
                 if self.pass_item(item):
                     continue
                 logging.info('start process new item.....index: {}'.format(self._index))
 
-                click_before = len(self.get_all_text())
                 item.click()
-                click_after = len(self.get_all_text())
-                if click_before == click_after:
-                    logging.info('点击跳转失败，skip')
-                    continue
-
                 self._process_item(sort_key)
-                self.return_pre(times=1)
+
+                while True:
+                    current_len = len(self.app.xpath(self.page_list_xpath).all())
+                    if current_len == 0:  # 只要没回到列表页，就再次返回 pre_len 会变
+                        logging.info(f"current {current_len} , pre: {pre_len}, try return pre ...")
+                        self.return_pre()
+                        self.sleep(5)
+                    else:
+                        break
             self.swipe_down()
-            # 再次判断当前页面是详情，再次返回
-            buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
-            if buk.exists and buk.text.startswith('说点什么'):
-                logging.info("二次判断是详情页,再次返回")
-                self.return_pre()
+            self.sleep(10)  # 控制速率
 
     def get_auth_info(self):
         logging.info("开始获取个人信息。。。start")
@@ -93,11 +102,12 @@ class SpiderXhs(SpiderBase):
         return data
 
     def _process_item(self, price_str):
-        self.sleep_random(3, 10)
+        logging.info("start process_item ...")
+        self.sleep_random()
 
         buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
         if not buk.exists or not buk.text.startswith('说点什么'):
-            logging.error("进入到错误的页面: {}".format(self.screen_debug()))
+            logging.error("可能是 视频内容 skip")
             return
 
         title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dcg"]')
