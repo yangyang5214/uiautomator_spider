@@ -65,7 +65,7 @@ class SpiderBase:
             sys.exit(-1)
 
         self.restart()
-        log.info("Init uiautomator2 success，✈️️️")
+        log.info("Init uiautomator2 success")
         for watcher in self.watchers:
             self.app.watcher.when(watcher).click()
 
@@ -99,6 +99,8 @@ class SpiderBase:
     def get_all_text(self, xpath=None):
         if not xpath:
             xpath = '//android.widget.TextView'
+        elif not xpath.endswith('//android.widget.TextView'):
+            xpath = xpath + '//android.widget.TextView'
         return [_.text.strip() for _ in self.xpath(xpath).all() if _.text.strip()]
 
     @staticmethod
@@ -277,11 +279,10 @@ class SpiderBase:
         return os.path.join(base_dir, 'result.json')
 
     def save_result(self, base_dir, data):
-        data['_index'] = self._index
         data['ts'] = int(time.time())
         with open(self.get_result_path(base_dir), 'w') as f:
             json.dump(data, f, ensure_ascii=False)
-        log.info('🎉🎉🎉 。。。\n')
+        log.info('>>>>>>>>>>>>>>>>>>>\n')
         self._index += 1
         self.sleep_random(10, 20)
         if self.cached_item > 0:

@@ -3,9 +3,11 @@ import os
 
 import uiautomator2 as u2
 
-input_file = '/Users/beer/Downloads/continue_20220521.csv'
+from spider_xhs import *
 
-target_dir = '/tmp/xhs'
+input_file = 'continue.csv'
+
+target_dir = 'continue'
 
 os.makedirs(target_dir, exist_ok=True)
 
@@ -18,8 +20,6 @@ def get_search_keyword():
 
 
 package_name = 'com.xingin.xhs'
-
-page_list_xpath = '//*[@resource-id="com.xingin.xhs:id/csn"]/android.widget.FrameLayout//android.view.View'
 
 
 def get_all_text(app, xpath=None):
@@ -43,7 +43,7 @@ def main():
     app.app_start(package_name, stop=True)
     app.sleep(10)
 
-    app.xpath('//*[@resource-id="com.xingin.xhs:id/ebt"]').click()
+    app.xpath(search_input_xpath).click()
 
     for _id, keyword, auther in get_search_keyword():
         result_path = os.path.join(target_dir, _id + ".json")
@@ -53,8 +53,8 @@ def main():
 
         print(keyword, auther)
 
-        app.xpath('//*[@resource-id="com.xingin.xhs:id/ct1"]').set_text(keyword)
-        app.xpath('//*[@resource-id="com.xingin.xhs:id/ct4"]').click()
+        app.xpath(search_text_xpath).set_text(keyword)
+        app.xpath(search_click).click()
         app.sleep(3)
 
         if auther not in get_all_text(app):
@@ -77,9 +77,9 @@ def main():
             if not nickname.exists or nickname.text != auther:
                 swipe_right(app)
                 continue
-            like_count = app.xpath('//*[@resource-id="com.xingin.xhs:id/dbt"]').text
-            collect_count = app.xpath('//*[@resource-id="com.xingin.xhs:id/dam"]').text
-            comment_count = app.xpath('//*[@resource-id="com.xingin.xhs:id/das"]').text
+            like_count = app.xpath(like_xpath).text
+            collect_count = app.xpath(collect_xpath).text
+            comment_count = app.xpath(comment_xpath).text
 
             data = {
                 'comment_count': comment_count,

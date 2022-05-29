@@ -7,21 +7,29 @@ from spiders.spider_base import SpiderBase, log as logging
 穿戴甲  美甲 美甲片
 """
 
+like_xpath = '//*[@resource-id="com.xingin.xhs:id/dzh"]'
+collect_xpath = '//*[@resource-id="com.xingin.xhs:id/dyf"]'
+comment_xpath = '//*[@resource-id="com.xingin.xhs:id/dym"]'
+page_list_xpath = '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.widget.FrameLayout//android.view.View'
+search_input_xpath = '//*[@resource-id="com.xingin.xhs:id/f20"]'
+search_text_xpath = '//*[@resource-id="com.xingin.xhs:id/ddd"]'
+search_click = '//*[@resource-id="com.xingin.xhs:id/ddh"]'
+
 
 class SpiderXhs(SpiderBase):
     name = "xhs"
     package_name = 'com.xingin.xhs'
 
-    page_list_xpath = '//*[@resource-id="com.xingin.xhs:id/csn"]/android.widget.FrameLayout//android.view.View'
+    page_list_xpath = page_list_xpath
 
     # 三种排序方式：
     sort_items = {
-        '综合': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
         '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
+        '综合': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
         '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
 
-    item_limit = 80
+    item_limit = 30
 
     def process(self):
         for sort_key, sort_xpath in self.sort_items.items():
@@ -31,21 +39,21 @@ class SpiderXhs(SpiderBase):
             self.restart()
 
     def _process_keyword(self, sort_key, sort_xpath):
-        # search btn
-        self.xpath('//*[@resource-id="com.xingin.xhs:id/ebt"]').click()
-        # 输入 keyword
-        self.xpath('//*[@resource-id="com.xingin.xhs:id/ct1"]').set_text(self.keyword)
-        # 触发搜索
-        self.xpath('//*[@resource-id="com.xingin.xhs:id/ct4"]').click()
+        self.xpath(search_input_xpath).click()
+        self.xpath(search_text_xpath).set_text(self.keyword)
+        self.xpath(search_click).click()
 
         self.xpath(sort_xpath).click()
+
+        self.sleep_random()
 
         logging.info("click 图文。。。")
 
         # 筛选图文
-        tu_wen = self.xpath('//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]')
+        tu_wen = self.xpath('//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]')
         if tu_wen.exists:
             tu_wen.click()
+            self.sleep_random()
         else:
             exit()
 
@@ -84,17 +92,15 @@ class SpiderXhs(SpiderBase):
         avatar_layout = self.xpath('//*[@resource-id="com.xingin.xhs:id/avatarLayout"]')
         if avatar_layout.exists:
             avatar_layout.click()
+            self.sleep_random()
         else:
             return {}
-        cyq = self.get_all_text('//*[@resource-id="com.xingin.xhs:id/cyq"]/android.view.ViewGroup[3]//*')
-        extra_info = []
-        if cyq:
-            extra_info = cyq[:6]  # 关注/粉丝/点赞
+        extra_info = self.get_all_text('//*[@resource-id="com.xingin.xhs:id/bf_"]')
         data = {
-            'nickname': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dqs"]'),
-            '_id': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dqt"]'),
-            'desc': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/fih"]'),
-            'tag_info': self.get_all_text('//*[@resource-id="com.xingin.xhs:id/cyh"]//*'),
+            'nickname': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/eek"]'),
+            '_id': self.xpath_text('//*[@resource-id="com.xingin.xhs:id/eel"]'),
+            "geo_info": self.xpath_text('//*[@resource-id="com.xingin.xhs:id/eei"]'),
+            'tag_info': self.get_all_text('//*[@resource-id="com.xingin.xhs:id/djc"]'),
             'extra_info': extra_info
         }
         self.return_pre()
@@ -105,20 +111,20 @@ class SpiderXhs(SpiderBase):
         logging.info("start process_item ...")
         self.sleep_random()
 
-        buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
+        buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/c_c"]')
         if not buk.exists or not buk.text.startswith('说点什么'):
             logging.error("可能是 视频内容 skip")
             self.sleep_random(5, 10)  # 控制速率
             return
 
-        title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dcg"]')
+        title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/e04"]')
         if not title:
             logging.error("获取 title 失败, skip {}".format(self.screen_debug()))
             return
 
-        like_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dbt"]')
-        collect_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dam"]')
-        comment_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/das"]')
+        like_count = self.xpath_text(like_xpath)
+        collect_count = self.xpath_text(collect_xpath)
+        comment_count = self.xpath_text(comment_xpath)
 
         product_id = self.get_product_id(title)
         base_dir = self.base_dir(price_str, product_id)
@@ -145,11 +151,11 @@ class SpiderXhs(SpiderBase):
         logging.info("image save end ...")
 
         # 不能放在前面，需要 swipe 获取
-        content = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/brq"]')
+        content = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/c79"]')
         if not content:
-            logging.error("获取 content 失败, skip {}".format(self.screen_debug()))
-            return
-        last_update = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/dc2"]')
+            logging.info("获取 content 失败, skip {}".format(self.screen_debug()))
+
+        last_update = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/dzt"]')
         auth_info = self.get_auth_info()
         data = {
             'title': title,

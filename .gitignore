@@ -138,3 +138,6 @@ build
 *exe
 *.sh
 **/.DS_Store
+
+
+uiautomator_spider.zip
