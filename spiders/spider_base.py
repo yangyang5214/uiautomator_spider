@@ -10,7 +10,6 @@ import subprocess
 import sys
 import time
 import uuid
-from datetime import datetime
 
 import uiautomator2 as u2
 
@@ -19,16 +18,11 @@ if not os.path.exists(home_dir):
     os.makedirs(home_dir, exist_ok=True)
 
 logging.basicConfig(
-    level=logging.INFO
+    level=logging.INFO,
+    format=''
 )
 
 log = logging.getLogger()
-
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-filename = datetime.now().strftime('%Y-%m-%d')
-file_handler = logging.FileHandler("{}/{}.log".format(home_dir, filename))
-file_handler.setFormatter(formatter)
-log.addHandler(file_handler)
 
 
 class SpiderBase:
