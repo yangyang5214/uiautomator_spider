@@ -15,9 +15,6 @@ class SpiderDingDong(SpiderBase):
 
     stop = True
 
-    def __init__(self, keyword):
-        super().__init__(keyword)
-
     def process_yun_li(self):
         """
         监控 运力

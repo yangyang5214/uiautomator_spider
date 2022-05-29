@@ -55,11 +55,11 @@ class SpiderBase:
 
     stop = True
 
-    def __init__(self, keyword):
+    def __init__(self, keyword, addr=None):
         self.keyword = keyword
         self._index = 1
         try:
-            self.app = u2.connect()
+            self.app = u2.connect(addr)
         except:
             log.info("Can't find any android device. exit")
             sys.exit(-1)

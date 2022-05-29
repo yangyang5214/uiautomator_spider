@@ -25,8 +25,6 @@ class SpiderWph(SpiderBase):
         '//*[@resource-id="com.achievo.vipshop:id/ll_button"]'  # 我知道了按钮
     ]
 
-    def __init__(self, keyword):
-        super().__init__(keyword)
 
     def _process_keyword(self, start_price, end_price):
         # 点击输入框，跳转到主 输入页面

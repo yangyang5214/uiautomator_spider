@@ -29,9 +29,6 @@ class SpiderDy(SpiderBase):
         '//*[@resource-id="com.ss.android.ugc.aweme:id/c9k"]'
     ]
 
-    def __init__(self, keyword):
-        super().__init__(keyword)
-
     def _process_keyword(self, start_price, end_price):
         log.info('click 【我】 btn...')
         self.xpath('//*[@resource-id="com.ss.android.ugc.aweme:id/root_view"]/android.widget.FrameLayout[5]').click()

@@ -16,9 +16,6 @@ class SpiderIns(SpiderBase):
 
     page_limit = 100
 
-    def __init__(self, keyword):
-        super().__init__(keyword)
-
     def _process_keyword(self, start_price, end_price):
         # search btn
         self.xpath('//*[@resource-id="com.instagram.android:id/search_tab"]/android.widget.ImageView[1]').click()

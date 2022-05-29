@@ -22,9 +22,6 @@ class SpiderDu(SpiderBase):
 
     prices = [100, 1000]
 
-    def __init__(self, keyword):
-        super().__init__(keyword)
-
     def _process_keyword(self, start_price, end_price):
         log.info("尝试点击购买标签")
         rbtn_mall = self.xpaths([

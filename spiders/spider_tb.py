@@ -16,9 +16,6 @@ class SpiderTb(SpiderBase):
 
     prices = [100, 1000]
 
-    def __init__(self, keyword):
-        super().__init__(keyword)
-
     def _process_keyword(self, start_price, end_price):
         log.info("click 【搜索栏】")
         self.app.xpath('//*[@content-desc="搜索栏"]/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.widget.LinearLayout[1]').click()

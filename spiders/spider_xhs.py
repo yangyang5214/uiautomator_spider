@@ -108,6 +108,7 @@ class SpiderXhs(SpiderBase):
         buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/buk"]')
         if not buk.exists or not buk.text.startswith('说点什么'):
             logging.error("可能是 视频内容 skip")
+            self.sleep_random(5, 10)  # 控制速率
             return
 
         title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dcg"]')
