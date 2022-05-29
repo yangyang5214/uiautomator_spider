@@ -7,8 +7,8 @@ from spiders.spider_base import SpiderBase, log as logging
 穿戴甲  美甲 美甲片
 """
 
-like_xpath = '//*[@resource-id="com.xingin.xhs:id/dzh"]'
-collect_xpath = '//*[@resource-id="com.xingin.xhs:id/dyf"]'
+like_xpath = '//*[@resource-id="com.xingin.xhs:id/dzk"]'
+collect_xpath = '//*[@resource-id="com.xingin.xhs:id/dyg"]'
 comment_xpath = '//*[@resource-id="com.xingin.xhs:id/dym"]'
 page_list_xpath = '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.widget.FrameLayout//android.view.View'
 search_input_xpath = '//*[@resource-id="com.xingin.xhs:id/f20"]'
@@ -24,9 +24,9 @@ class SpiderXhs(SpiderBase):
 
     # 三种排序方式：
     sort_items = {
-        '最热': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
+        '最热': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
         '综合': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
-        '最新': '//*[@resource-id="com.xingin.xhs:id/csn"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
+        '最新': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
 
     item_limit = 30
