@@ -280,8 +280,8 @@ class SpiderBase:
 
     def save_result(self, base_dir, data):
         data['ts'] = int(time.time())
-        with open(self.get_result_path(base_dir), 'w') as f:
-            json.dump(data, f, ensure_ascii=False)
+        with open(self.get_result_path(base_dir), 'w', encoding='utf-8') as f:
+            json.dump(data, f)
         log.info('>>>>>>>>>>>>>>>>>>>\n')
         self._index += 1
         self.sleep_random(10, 20)
