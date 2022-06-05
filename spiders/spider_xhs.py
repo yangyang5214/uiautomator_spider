@@ -61,9 +61,7 @@ class SpiderXhs(SpiderBase):
 
     def process_page_list(self, sort_key, _):
         while True:
-            current_count = self.get_current_count(sort_key)
-            logging.info(f"current_count: {current_count}")
-            if current_count > self.item_limit:
+            if self._index > self.item_limit:
                 break
             temp_lists = self.xpath(self.page_list_xpath).all()
             pre_len = len(temp_lists)
@@ -129,7 +127,7 @@ class SpiderXhs(SpiderBase):
         product_id = self.get_product_id(title)
         base_dir = self.base_dir(price_str, product_id)
         logging.info("result: {}".format(base_dir))
-        self.app.screenshot(os.path.join(base_dir, 'main.png'))
+        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
 
         if os.path.exists(self.get_result_path(base_dir)):
             logging.info("cache... skip\n")
@@ -142,7 +140,7 @@ class SpiderXhs(SpiderBase):
 
         for index in range(image_size):
             image_elm = self.xpath('//*[@resource-id="com.xingin.xhs:id/noteContentLayout"]/android.widget.FrameLayout[1]')
-            image_name = os.path.join(base_dir, '{}.png'.format(index))
+            image_name = os.path.join(base_dir, '{}.jpg'.format(index))
             if image_elm.exists:
                 image_elm.screenshot().save(image_name)
             if index != image_size - 1:

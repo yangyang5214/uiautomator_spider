@@ -80,11 +80,11 @@ class SpiderIns(SpiderBase):
             logging.info("cache... skip\n")
             return True
 
-        self.app.screenshot(os.path.join(base_dir, 'main.png'))
+        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
 
         for index in range(image_size):
             image_elm = self.xpath('//*[@resource-id="com.instagram.android:id/zoomable_view_container"]')
-            image_name = os.path.join(base_dir, '{}.png'.format(index))
+            image_name = os.path.join(base_dir, '{}.jpg'.format(index))
             if image_elm.exists:
                 image_elm.screenshot().save(image_name)
             else:

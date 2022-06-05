@@ -118,16 +118,16 @@ class SpiderDu(SpiderBase):
                 self.cached_item += 1
                 return
 
-        self.app.screenshot(os.path.join(base_dir, 'main.png'))
+        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
 
         log.info('开始处理图片。。。image_size: {}'.format(image_size))
 
-        image_name = os.path.join(base_dir, 'main.png')
+        image_name = os.path.join(base_dir, 'main.jpg')
         self.app.screenshot(image_name)
 
         for i in range(image_size_start, image_size):
             self.swipe_left()
-            image_name = os.path.join(base_dir, str(i - image_size_start) + '.png')
+            image_name = os.path.join(base_dir, str(i - image_size_start) + '.jpg')
             elm = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/pullLayout"]//android.widget.ImageView')
             if elm.exists:
                 elm.screenshot().save(image_name)

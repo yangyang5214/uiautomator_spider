@@ -77,7 +77,7 @@ class SpiderBase:
         return str(uuid.uuid4())
 
     def screen_debug(self):
-        file_name = os.path.join(home_dir, self.uuid() + '.png')
+        file_name = os.path.join(home_dir, self.uuid() + '.jpg')
         self.app.screenshot(file_name)
         log.info("debug: {}".format(file_name))
         return file_name
@@ -179,8 +179,8 @@ class SpiderBase:
         下滑
         :return:
         """
-        self.app.swipe(300, 1000, 300, 400, 0.08)
-        self.sleep_random()
+        self.app.swipe(300, 1000, 300, 400, 0.03)
+        self.sleep_random(10, 20)
 
     def swipe_right(self):
         """
@@ -188,7 +188,8 @@ class SpiderBase:
         :return:
         """
         self.sleep(1.5)
-        self.app.swipe(0, 600, 300, 600, 0.1)
+        # self.app.swipe(0, 600, 600, 600, 0.1)
+        self.app.keyevent('4')
         self.sleep(1.5)
 
     def process_page_list(self, start_price, end_price):
@@ -221,7 +222,7 @@ class SpiderBase:
                 if self.cached_item > 20:
                     return
                     # 向下滑动
-            self.app.swipe(300, 1000, 300, 400, 0.08)
+            self.swipe_down()
 
     def base_dir(self, sub_dir, product_id):
         if sub_dir:
@@ -275,8 +276,13 @@ class SpiderBase:
     def save_result(self, base_dir, data):
         data['ts'] = int(time.time())
         with open(self.get_result_path(base_dir), 'w', encoding='utf-8') as f:
-            json.dump(data, f)
-        log.info('>>>>>>>>>>>>>>>>>>>\n')
+            json.dump(data, f, ensure_ascii=False)
+
+        log.info('-' * 20)
+        log.info('\n')
+        log.info('\n')
+        log.info('\n')
+
         self._index += 1
         self.sleep_random(10, 20)
         if self.cached_item > 0:

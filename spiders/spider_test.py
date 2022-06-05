@@ -12,21 +12,9 @@ def get_all_text(app, xpath=None):
 
 if __name__ == '__main__':
     app = u2.connect()
-    # app.app_start('com.xingin.xhs', stop=False)
 
-    app.screenshot().save('1.png')
+    image_elm = app.xpath('//*[@resource-id="com.shizhuang.duapp:id/flImageViewpager"]')
+    image_elm.screenshot().save('1.jpg')
+    image_elm.screenshot().save('1.jpg')
 
-    with open('2.png', 'wb') as f:
-        f.write(app.screenshot(format="raw"))
-    exit()
 
-    all_text = get_all_text(app)
-    # app.swipe(300, 1000, 300, 400, 0.08)
-    # print()
-    # print(all_text)
-    s = app.dump_hierarchy()
-    print(s)
-
-    with open('demo.xml', 'w') as f:
-        f.write(s)
-    app.screenshot().save('demo.png')

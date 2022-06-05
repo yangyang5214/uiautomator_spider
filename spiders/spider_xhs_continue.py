@@ -1,5 +1,4 @@
 import json
-import os
 
 import uiautomator2 as u2
 
@@ -13,6 +12,9 @@ os.makedirs(target_dir, exist_ok=True)
 
 
 def get_search_keyword():
+    if not os.path.exists(input_file):
+        print("请把文件放在当前目录, 并命名为 continue.csv")
+        exit(-1)
     with open(input_file, 'r') as f:
         for line in f.readlines():
             arr = line.split(",")
@@ -28,14 +30,9 @@ def get_all_text(app, xpath=None):
     return [_.text.strip() for _ in app.xpath(xpath).all() if _.text.strip()]
 
 
-def swipe_right(app):
-    """
-    右滑
-    :return:
-    """
-    app.sleep(1.5)
-    app.swipe(0, 600, 300, 600, 0.1)
-    app.sleep(1.5)
+def flag(result_path):
+    with open(result_path, 'w') as f:
+        json.dump({}, f, ensure_ascii=False)
 
 
 def main():
@@ -46,36 +43,40 @@ def main():
     app.xpath(search_input_xpath).click()
 
     for _id, keyword, auther in get_search_keyword():
+
         result_path = os.path.join(target_dir, _id + ".json")
         if os.path.exists(result_path):
             print('cached, skip')
             continue
 
-        print(keyword, auther)
+        app.sleep(10)
+
+        print("process: {} {}".format(keyword, auther))
 
         app.xpath(search_text_xpath).set_text(keyword)
+        app.sleep(2)
         app.xpath(search_click).click()
         app.sleep(3)
 
-        if auther not in get_all_text(app):
-            swipe_right(app)
-            continue  # 不存在
-
         all_items = app.xpath(page_list_xpath).all()
+
+        data = {}
         for item in all_items:
-            item.click()
+            print('new item...')
 
-            try:
-                item.click()
-            except:
-                pass  # 二次点击，确保跳转
-            app.sleep(3)
+            item.click()  # 跳转
 
-            app.click(300, 300)
+            app.sleep(5)
 
             nickname = app.xpath('//*[@resource-id="com.xingin.xhs:id/nickNameTV"]')
-            if not nickname.exists or nickname.text != auther:
-                swipe_right(app)
+            if not nickname.exists:  # 非详情页面
+                if len(app.xpath(page_list_xpath).all()) != len(all_items):  # 跳转了
+                    app.keyevent('4')  # 返回列表页
+                continue
+
+            if nickname.text != auther:
+                app.keyevent('4')
+                app.sleep(3)
                 continue
             like_count = app.xpath(like_xpath).text
             collect_count = app.xpath(collect_xpath).text
@@ -90,14 +91,17 @@ def main():
                 "id": _id
             }
 
-            with open(result_path, 'w') as f:
-                json.dump(data, f, ensure_ascii=False)
-
-            app.sleep(8)
-
-            swipe_right(app)
+            app.keyevent('4')  # 返回到列表页
+            app.sleep(5)
             break
-        swipe_right(app)
+
+        with open(result_path, 'w') as f:
+            json.dump(data, f, ensure_ascii=False)
+
+        app.keyevent('4')  # 返回到搜索页
+        app.sleep(3)
+
+        print("-" * 10)
 
 
 if __name__ == '__main__':

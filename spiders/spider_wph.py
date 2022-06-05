@@ -89,7 +89,7 @@ class SpiderWph(SpiderBase):
         # image_cache
         _, result = SpiderBase.run_system_cmd("ls | grep png | wc -l")
         if int(result) < 3:
-            self.app.screenshot(os.path.join(base_dir, 'main.png'))
+            self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
             logging.info('开始处理图片。。。image_size: {}'.format(image_size))
             for i in range(0, image_size - 1):
                 self.app.swipe(700, 300, 100, 300, 0.1)
@@ -100,7 +100,7 @@ class SpiderWph(SpiderBase):
             self.sleep(0.5)
 
             image_names = []
-            image_name = os.path.join(base_dir, '0.png')
+            image_name = os.path.join(base_dir, '0.jpg')
             self.app.screenshot(image_name)
             image_names.append(os.path.basename(image_name))
 
@@ -108,7 +108,7 @@ class SpiderWph(SpiderBase):
                 self.app.swipe(100, 300, 700, 300, 0.1)
                 logging.info("swipe...{}".format(i))
                 self.sleep(3)
-                image_name = os.path.join(base_dir, str(i) + '.png')
+                image_name = os.path.join(base_dir, str(i) + '.jpg')
                 self.app.screenshot(image_name)
                 image_names.append(os.path.basename(image_name))
             self.return_pre()

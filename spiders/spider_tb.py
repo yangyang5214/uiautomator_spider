@@ -11,7 +11,8 @@ class SpiderTb(SpiderBase):
     page_list_xpath = '//*[@resource-id="com.taobao.taobao:id/libsf_srp_header_list_recycler"]/android.widget.FrameLayout'
 
     watchers = [
-        '//*[@resource-id="com.taobao.taobao:id/update_imageview_cancel_v2"]'  # 更新软件的取消按钮
+        '//*[@resource-id="com.taobao.taobao:id/update_imageview_cancel_v2"]',  # 更新软件的取消按钮
+        '//*[@content-desc="浮层关闭按钮"]'
     ]
 
     prices = [100, 1000]
@@ -112,19 +113,18 @@ class SpiderTb(SpiderBase):
         result_json = self.get_result_path(base_dir)
         if os.path.exists(result_json):
             log.info("cache... skip\n")
-            self._index += 1
             return
 
         log.info('开始处理图片。。。image_size: {}'.format(image_size))
 
-        image_name = os.path.join(base_dir, 'main.png')
+        image_name = os.path.join(base_dir, 'main.jpg')
         self.app.screenshot(image_name)
 
         for index in range(1, image_size - 1):  # 保险点最后一个图片不取，可能会多余滑动
             log.info("current index {}".format(index))
             self.app.swipe(400, 300, 100, 300, 0.1)
             img_elm = self.xpath('//*[@resource-id="com.taobao.taobao:id/mainpage2"]/android.widget.RelativeLayout[1]')
-            image_name = os.path.join(base_dir, '{}.png'.format(index))
+            image_name = os.path.join(base_dir, '{}.jpg'.format(index))
             if img_elm.exists:
                 img_elm.screenshot().save(image_name)
             self.sleep_random()

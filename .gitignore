@@ -141,3 +141,8 @@ build
 
 
 uiautomator_spider.zip
+
+
+spiders/continue*
+
+apks

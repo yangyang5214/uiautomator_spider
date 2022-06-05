@@ -88,13 +88,13 @@ class SpiderDy(SpiderBase):
                     sales = elm.text
                     break
 
-        self.app.screenshot(os.path.join(base_dir, 'main.png'))
+        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
 
         # 点击图片，到大图
         self.app.click(300, 300)
         self.sleep(2)
 
-        image_name = os.path.join(base_dir, '0.png')
+        image_name = os.path.join(base_dir, '0.jpg')
         self.app.screenshot(image_name)
 
         image_size = SpiderBase.get_image_size(self.get_all_text())
@@ -103,7 +103,7 @@ class SpiderDy(SpiderBase):
             self.app.swipe(700, 300, 100, 300, 0.1)
             log.info("swipe...{}".format(i))
             self.sleep(3)
-            image_name = os.path.join(base_dir, str(i) + '.png')
+            image_name = os.path.join(base_dir, str(i) + '.jpg')
             self.app.screenshot(image_name)
         self.return_pre()
 
