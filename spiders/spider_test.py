@@ -16,5 +16,3 @@ if __name__ == '__main__':
     image_elm = app.xpath('//*[@resource-id="com.shizhuang.duapp:id/flImageViewpager"]')
     image_elm.screenshot().save('1.jpg')
     image_elm.screenshot().save('1.jpg')
-
-

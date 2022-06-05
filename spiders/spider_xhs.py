@@ -29,14 +29,27 @@ class SpiderXhs(SpiderBase):
         '最新': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
     }
 
-    item_limit = 30
+    blacklist = [
+        "教程",
+    ]
+
+    item_limit = 100
 
     def process(self):
-        for sort_key, sort_xpath in self.sort_items.items():
-            self._index = 1
-            logging.info("start process: {} - {}".format(self.keyword, sort_key))
-            self._process_keyword(sort_key, sort_xpath)
-            self.restart()
+        while True:
+            for sort_key, sort_xpath in self.sort_items.items():
+                logging.info("start process: {} - {}".format(self.keyword, sort_key))
+                self._process_keyword(sort_key, sort_xpath)
+                self.restart()
+
+            index = 0
+            for sort_key in self.sort_items.keys():
+                current_count = self.get_current_count(sort_key)
+                if current_count >= self.item_limit:
+                    index += 1
+
+            if index == 3:
+                break
 
     def _process_keyword(self, sort_key, sort_xpath):
         self.xpath(search_input_xpath).click()
@@ -55,14 +68,19 @@ class SpiderXhs(SpiderBase):
             tu_wen.click()
             self.sleep_random()
         else:
+            logging.info("点击 **筛选 图文** 出错")
             exit()
 
         self.process_page_list(sort_key, None)
 
     def process_page_list(self, sort_key, _):
-        while True:
-            if self._index > self.item_limit:
+        flag = True
+        while flag:
+            current_count = self.get_current_count(sort_key)
+            logging.info(f"current_count: {current_count}")
+            if current_count > self.item_limit:
                 break
+
             temp_lists = self.xpath(self.page_list_xpath).all()
             pre_len = len(temp_lists)
             for item in temp_lists:
@@ -71,7 +89,10 @@ class SpiderXhs(SpiderBase):
                 logging.info('start process new item.....index: {}'.format(self._index))
 
                 item.click()
-                self._process_item(sort_key)
+                r = self._process_item(sort_key)
+                if r and r == -1:
+                    flag = False
+                    break
 
                 while True:
                     current_len = len(self.app.xpath(self.page_list_xpath).all())
@@ -112,8 +133,7 @@ class SpiderXhs(SpiderBase):
         buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/c_c"]')
         if not buk.exists or not buk.text.startswith('说点什么'):
             logging.error("可能是 视频内容 skip")
-            self.sleep_random(5, 10)  # 控制速率
-            return
+            return -1
 
         title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/e04"]')
         if not title:

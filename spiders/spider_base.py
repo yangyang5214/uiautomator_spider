@@ -280,8 +280,6 @@ class SpiderBase:
 
         log.info('-' * 20)
         log.info('\n')
-        log.info('\n')
-        log.info('\n')
 
         self._index += 1
         self.sleep_random(10, 20)
