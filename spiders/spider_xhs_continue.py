@@ -1,14 +1,21 @@
 import json
+import os
 
 import uiautomator2 as u2
-
-from spider_xhs import *
 
 input_file = 'continue.csv'
 
 target_dir = 'continue'
 
 os.makedirs(target_dir, exist_ok=True)
+
+like_xpath = '//*[@resource-id="com.xingin.xhs:id/dzk"]'
+collect_xpath = '//*[@resource-id="com.xingin.xhs:id/dyg"]'
+comment_xpath = '//*[@resource-id="com.xingin.xhs:id/dym"]'
+page_list_xpath = '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.widget.FrameLayout//android.view.View'
+search_input_xpath = '//*[@resource-id="com.xingin.xhs:id/f20"]'
+search_text_xpath = '//*[@resource-id="com.xingin.xhs:id/ddd"]'
+search_click = '//*[@resource-id="com.xingin.xhs:id/ddh"]'
 
 
 def get_search_keyword():
