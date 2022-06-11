@@ -22,7 +22,7 @@ def get_search_keyword():
     if not os.path.exists(input_file):
         print("请把文件放在当前目录, 并命名为 continue.csv")
         exit(-1)
-    with open(input_file, 'r') as f:
+    with open(input_file, 'r', encoding='utf-8') as f:
         for line in f.readlines():
             arr = line.split(",")
             yield arr[0], arr[1], arr[2]
@@ -43,7 +43,13 @@ def flag(result_path):
 
 
 def main():
-    app = u2.connect()
+    app = None
+    try:
+        app = u2.connect()
+    except Exception as e:
+        print(e)
+        exit()
+
     app.app_start(package_name, stop=True)
     app.sleep(10)
 
@@ -102,7 +108,7 @@ def main():
             app.sleep(5)
             break
 
-        with open(result_path, 'w') as f:
+        with open(result_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False)
 
         app.keyevent('4')  # 返回到搜索页

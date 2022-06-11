@@ -14,7 +14,7 @@ class SpiderIns(SpiderBase):
 
     page_list_xpath = 'com.instagram.android:id/image_button'
 
-    page_limit = 100
+    page_limit = 10  # 滑动多少页
 
     def _process_keyword(self, start_price, end_price):
         # search btn
@@ -29,12 +29,17 @@ class SpiderIns(SpiderBase):
         # 切换到标签
         self.xpath('//*[@content-desc="标签"]').click()
 
+        self.sleep(5)
+
         # 选择第一个
-        self.xpath('//*[@resource-id="com.instagram.android:id/recycler_view"]/android.widget.FrameLayout[1]').click()
+        self.xpath('//*[@resource-id="com.instagram.android:id/recycler_view"]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.LinearLayout[1]').click()
 
         self.sleep(5)
 
         self.process_page_list(start_price, end_price)
+
+    def pass_item(self, item):
+        return False
 
     def process_page_list(self, start_price, end_price):
         index = 0
@@ -44,13 +49,12 @@ class SpiderIns(SpiderBase):
                 if self.pass_item(item):
                     continue
                 item.click()
-                self.sleep(5)
+                self.sleep(3)
                 logging.info('start process new item.....')
-                if self._process_item(''):
-                    self.return_pre()
+                self._process_item('')
+                self.return_pre()
             index += 1
-            self.app.swipe(300, 1000, 300, 400, 0.05)
-            self.app.implicitly_wait(10)
+            self.swipe_down()
 
     def _process_item(self, price_str: str):
 
@@ -67,29 +71,42 @@ class SpiderIns(SpiderBase):
             logging.info("不是详情页，skip 😭😭😭")
             return
 
-        image_size = 1
-        if self.xpath('//*[@resource-id="com.instagram.android:id/carousel_page_indicator"]').exists:
-            image_size = 2
-
-        logging.info('image_size: {}'.format(image_size))
-
-        # 简单作为 唯一key
         product_id = self.get_product_id(like_num + profile_name)
         base_dir = self.base_dir(price_str, product_id)
         if os.path.exists(self.get_result_path(base_dir)):
             logging.info("cache... skip\n")
             return True
 
-        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
+        image_xpaths = [
+            '//*[@resource-id="com.instagram.android:id/carousel_media_group"]',
+            '//*[@resource-id="com.instagram.android:id/zoomable_view_container"]'
+        ]
 
-        for index in range(image_size):
-            image_elm = self.xpath('//*[@resource-id="com.instagram.android:id/zoomable_view_container"]')
+        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
+        image_name = os.path.join(base_dir, '0.jpg')
+        self.xpaths(image_xpaths).screenshot().save(image_name)
+
+        self.swipe_left()  # 尝试滑动
+
+        image_size = 1
+        image_elm = self.xpath('//*[@resource-id="com.instagram.android:id/carousel_index_indicator_text_view"]')
+        if image_elm.exists:
+            try:
+                image_size = int(image_elm.text.split('/')[-1])
+            except:
+                pass
+
+        logging.info('image_size: {}'.format(image_size))
+
+        for index in range(1, image_size):
+            logging.info(f"img index: {index}")
+            image_elm = self.xpaths(image_xpaths)
+            if not image_elm:
+                continue
             image_name = os.path.join(base_dir, '{}.jpg'.format(index))
-            if image_elm.exists:
-                image_elm.screenshot().save(image_name)
-            else:
-                self.app.screenshot()
-            if index != 0:
+            image_elm.screenshot().save(image_name)
+            self.app.screenshot()
+            if index != image_size - 1:
                 self.swipe_left()
 
         data = {

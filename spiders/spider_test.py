@@ -13,6 +13,10 @@ def get_all_text(app, xpath=None):
 if __name__ == '__main__':
     app = u2.connect()
 
+    t = app.xpath('//*[@resource-id="com.instagram.android:id/carousel_index_indicator_text_view"]').text
+    print(t)
+    exit()
+
     image_elm = app.xpath('//*[@resource-id="com.shizhuang.duapp:id/flImageViewpager"]')
     image_elm.screenshot().save('1.jpg')
     image_elm.screenshot().save('1.jpg')
