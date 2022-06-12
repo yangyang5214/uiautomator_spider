@@ -56,9 +56,11 @@ class SpiderXhs(SpiderBase):
         self.xpath(search_text_xpath).set_text(self.keyword)
         self.xpath(search_click).click()
 
+        self.sleep_random(10, 20)  # 筛选后 等待页面加载
+
         self.xpath(sort_xpath).click()
 
-        self.sleep_random(10, 20)
+        self.sleep_random(10, 20)  # 排序后 等待页面加载
 
         logging.info("click 图文。。。")
 
