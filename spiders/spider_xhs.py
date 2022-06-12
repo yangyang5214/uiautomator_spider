@@ -58,7 +58,7 @@ class SpiderXhs(SpiderBase):
 
         self.xpath(sort_xpath).click()
 
-        self.sleep_random()
+        self.sleep_random(10, 20)
 
         logging.info("click 图文。。。")
 
@@ -66,7 +66,7 @@ class SpiderXhs(SpiderBase):
         tu_wen = self.xpath('//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]')
         if tu_wen.exists:
             tu_wen.click()
-            self.sleep_random()
+            self.sleep_random(10, 20)
         else:
             logging.info("点击 **筛选 图文** 出错")
             exit()
