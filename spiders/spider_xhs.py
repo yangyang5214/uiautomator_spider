@@ -176,7 +176,7 @@ class SpiderXhs(SpiderBase):
             logging.info("获取 content 失败, skip {}".format(self.screen_debug()))
 
         last_update = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/dzt"]')
-        auth_info = self.get_auth_info()
+        # auth_info = self.get_auth_info()
         data = {
             'title': title,
             'content': content,
@@ -184,6 +184,6 @@ class SpiderXhs(SpiderBase):
             'comment_count': comment_count,
             'like_count': like_count,
             'collect_count': collect_count,
-            'auth_info': auth_info
+            'auth_info': {}
         }
         self.save_result(base_dir, data)

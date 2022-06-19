@@ -20,6 +20,8 @@ class SpiderIns(SpiderBase):
         # search btn
         self.xpath('//*[@resource-id="com.instagram.android:id/search_tab"]/android.widget.ImageView[1]').click()
 
+        self.sleep(5)
+
         # 输入 keyword
         self.xpath('//*[@resource-id="com.instagram.android:id/action_bar_search_hints_text_layout"]').set_text(self.keyword)
 
@@ -27,12 +29,11 @@ class SpiderIns(SpiderBase):
         self.xpath('//*[@resource-id="com.instagram.android:id/echo_text"]').click()
 
         # 切换到标签
-        self.xpath('//*[@content-desc="标签"]').click()
-
-        self.sleep(5)
+        # self.xpath('//*[@content-desc="标签"]').click()
+        # self.sleep(5)
 
         # 选择第一个
-        self.xpath('//*[@resource-id="com.instagram.android:id/recycler_view"]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.LinearLayout[1]').click()
+        # self.xpath('//*[@resource-id="com.instagram.android:id/recycler_view"]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.LinearLayout[1]').click()
 
         self.sleep(5)
 
@@ -51,8 +52,8 @@ class SpiderIns(SpiderBase):
                 item.click()
                 self.sleep(3)
                 logging.info('start process new item.....')
-                self._process_item('')
-                self.return_pre()
+                if self._process_item(''):
+                    self.return_pre()
             index += 1
             self.swipe_down()
 
@@ -71,7 +72,10 @@ class SpiderIns(SpiderBase):
             logging.info("不是详情页，skip 😭😭😭")
             return
 
-        product_id = self.get_product_id(like_num + profile_name)
+        content = self.xpath_text_by_swipe('//*[@resource-id="com.instagram.android:id/row_feed_comment_textview_layout"]/android.widget.Button[2]')
+        logging.info("content: {}".format(content))
+
+        product_id = self.get_product_id(profile_name + content)
         base_dir = self.base_dir(price_str, product_id)
         if os.path.exists(self.get_result_path(base_dir)):
             logging.info("cache... skip\n")
