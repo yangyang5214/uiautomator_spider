@@ -11,6 +11,10 @@ wph spider
 class SpiderWph(SpiderBase):
     name = "wph"
     package_name = 'com.achievo.vipshop'
+
+    item_limit = 80
+    prices = [100, 200]
+
     search_keyword_xpath = '//*[@resource-id="com.achievo.vipshop:id/search_text_view"]'
     search_keyword_confirm_xpath = '//*[@resource-id="com.achievo.vipshop:id/search_btn"]'
     sale_xpath = '//*[@resource-id="com.achievo.vipshop:id/text_sales_volume"]'
@@ -22,21 +26,26 @@ class SpiderWph(SpiderBase):
     page_list_xpath = '//*[@resource-id="com.achievo.vipshop:id/product_list_content_container"]//android.widget.RelativeLayout//android.widget.ImageView'
 
     watchers = [
-        '//*[@resource-id="com.achievo.vipshop:id/ll_button"]'  # 我知道了按钮
+        '//*[@resource-id="com.achievo.vipshop:id/ll_button"]',  # 我知道了按钮
+        '//*[@resource-id="com.achievo.vipshop:id/left_button"]'  # 软件更新
     ]
-
 
     def _process_keyword(self, start_price, end_price):
         # 点击输入框，跳转到主 输入页面
         self.xpath('//*[@resource-id="com.achievo.vipshop:id/index_search_hint"]').click()
+        self.sleep_random()
 
         self.do_search_keyword()
+        self.sleep_random()
 
         self.click_sale(self.sale_xpath)
+        self.sleep_random()
 
         self.range_price(start_price, end_price)
+        self.sleep_random()
 
         self.process_page_list(start_price, end_price)
+        self.sleep_random()
 
     def pass_item(self, item):
         """
@@ -73,8 +82,7 @@ class SpiderWph(SpiderBase):
         if product_name:
             product_id = self.get_product_id(product_name)
         else:
-            # todo 继续处理，而不是结束
-            self._error("Cannot find product_name. {}".format(self.screen_debug()))
+            exit(-1)
 
         base_dir = self.base_dir(price_str, product_id)
         if not os.path.exists(base_dir):
@@ -82,38 +90,27 @@ class SpiderWph(SpiderBase):
 
         if product_name and image_size == 0:
             # 可能是页面最下面点到了购物车
-            SpiderBase.run_system_cmd("rm -rf {}".format(base_dir))
+            os.system("rm -rf {}".format(base_dir))
             logging.info('🎉🎉🎉 。。。skip 购物车 \n')
             return
 
-        # image_cache
-        _, result = SpiderBase.run_system_cmd("ls | grep png | wc -l")
-        if int(result) < 3:
-            self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
-            logging.info('开始处理图片。。。image_size: {}'.format(image_size))
-            for i in range(0, image_size - 1):
-                self.app.swipe(700, 300, 100, 300, 0.1)
-                self.sleep(3)
+        self.app.screenshot(os.path.join(base_dir, 'main.jpg'))
 
-            # 点击图片，到大图
-            self.app.click(300, 300)
-            self.sleep(0.5)
+        logging.info('开始处理图片。。。image_size: {}'.format(image_size))
 
-            image_names = []
-            image_name = os.path.join(base_dir, '0.jpg')
-            self.app.screenshot(image_name)
-            image_names.append(os.path.basename(image_name))
-
-            for i in range(1, image_size - 1):
-                self.app.swipe(100, 300, 700, 300, 0.1)
-                logging.info("swipe...{}".format(i))
-                self.sleep(3)
-                image_name = os.path.join(base_dir, str(i) + '.jpg')
-                self.app.screenshot(image_name)
-                image_names.append(os.path.basename(image_name))
-            self.return_pre()
-        else:
-            logging.info("use image cache... skip image")
+        for i in range(image_size - 1):
+            self.swipe_left()
+            logging.info("image index: {}".format(i))
+            image_name = os.path.join(base_dir, str(i) + '.jpg')
+            if os.path.exists(image_name):
+                logging.info("image cached, skip")
+                continue
+            elm = self.xpath('//*[@resource-id="com.achievo.vipshop:id/product_gallery_layout"]')
+            if elm.exists:
+                elm.screenshot().save(image_name)
+                self.sleep_random()
+            else:
+                exit(-1)
 
         # 获取 评价数量
         for i in range(10):  # 最大尝试 10 次
@@ -136,6 +133,5 @@ class SpiderWph(SpiderBase):
             'product_name': product_name,
             'sales': sales,
             'comment': comment,
-            'all_texts': all_texts
         }
         self.save_result(base_dir, data)

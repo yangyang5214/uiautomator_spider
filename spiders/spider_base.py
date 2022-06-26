@@ -149,15 +149,6 @@ class SpiderBase:
             return True
         return False
 
-    @staticmethod
-    def run_system_cmd(cmd):
-        out, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()
-        if error:
-            log.error("run_system_cmd: {}, error: {}".format(cmd, error))
-            return False, None
-        log.info("run_system_cmd: {}, success!".format(cmd))
-        return True, out.decode('utf-8').strip()
-
     def return_pre(self, times=1):
         """
         返回上一页
@@ -282,7 +273,7 @@ class SpiderBase:
         log.info('\n')
 
         self._index += 1
-        self.sleep_random(10, 20)
+        self.sleep_random(5, 10)
         if self.cached_item > 0:
             self.cached_item -= 1
 
