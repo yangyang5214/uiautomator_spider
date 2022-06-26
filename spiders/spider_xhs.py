@@ -22,12 +22,16 @@ class SpiderXhs(SpiderBase):
 
     page_list_xpath = page_list_xpath
 
+    watchers = [
+        '//*[@resource-id="com.xingin.xhs:id/d8w"]'
+    ]
+
     # 三种排序方式：
-    sort_items = {
-        '最热': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[2]',
-        '综合': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[1]',
-        '最新': '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[3]',
-    }
+    sort_items = [
+        ['最新', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[3]'],
+        ['最热', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[2]'],
+        ['综合', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[1]'],
+    ]
 
     blacklist = [
         "教程",
@@ -36,20 +40,11 @@ class SpiderXhs(SpiderBase):
     item_limit = 100
 
     def process(self):
-        while True:
-            for sort_key, sort_xpath in self.sort_items.items():
-                logging.info("start process: {} - {}".format(self.keyword, sort_key))
-                self._process_keyword(sort_key, sort_xpath)
-                self.restart()
-
-            index = 0
-            for sort_key in self.sort_items.keys():
-                current_count = self.get_current_count(sort_key)
-                if current_count >= self.item_limit:
-                    index += 1
-
-            if index == 3:
-                break
+        for item in self.sort_items:
+            sort_key, sort_xpath = item[0], item[1]
+            logging.info("start process: {} - {}".format(self.keyword, sort_key))
+            self._process_keyword(sort_key, sort_xpath)
+            self.restart()
 
     def _process_keyword(self, sort_key, sort_xpath):
         self.xpath(search_input_xpath).click()
