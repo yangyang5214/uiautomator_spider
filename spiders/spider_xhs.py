@@ -28,7 +28,7 @@ class SpiderXhs(SpiderBase):
 
     # 三种排序方式：
     sort_items = [
-        ['最新', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[3]'],
+        # ['最新', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[3]'],
         ['最热', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[2]'],
         ['综合', '//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.TextView[1]'],
     ]

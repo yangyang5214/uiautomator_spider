@@ -49,7 +49,9 @@ class SpiderBase:
 
     stop = True
 
-    def __init__(self, keyword, addr=None):
+    def __init__(self, keyword, addr=None, prices=None):
+        print("keyword:{}, prices: {}".format(keyword, prices))
+        self.prices = prices
         self.keyword = keyword
         self._index = 1
         try:

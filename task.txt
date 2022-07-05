@@ -1,0 +1,5 @@
+python spider_main.py -n xhs -k 戒指
+python spider_main.py -n xhs -k 戒指
+python spider_main.py -n xhs -k 戒指
+python spider_main.py -n tb -k 项链 -p 0 100 200 3000
+python spider_main.py -n tb -k 戒指 -p 0 100 200 3000
