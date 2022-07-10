@@ -37,7 +37,11 @@ class SpiderXhs(SpiderBase):
         "教程",
     ]
 
+    skip_count = 0
+
     item_limit = 100
+    skip_flag = 3  # 出现多少次 就多滑动几页
+    swipe_flag = 1  # 下滑多少次
 
     def process(self):
         for item in self.sort_items:
@@ -102,6 +106,12 @@ class SpiderXhs(SpiderBase):
             self.swipe_down()
             self.sleep(10)  # 控制速率
 
+            if self.skip_count >= self.skip_flag:
+                for _ in range(self.swipe_flag):
+                    self.swipe_down()
+                    self.sleep(2)
+                self.skip_count = 0  # 重置为 0
+
     def get_auth_info(self):
         logging.info("开始获取个人信息。。。start")
         # 点击头像进入个人主页
@@ -148,6 +158,7 @@ class SpiderXhs(SpiderBase):
 
         if os.path.exists(self.get_result_path(base_dir)):
             logging.info("cache... skip\n")
+            self.skip_count += 1
             return
 
         image_size = 1

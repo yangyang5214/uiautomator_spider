@@ -21,4 +21,4 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--device', help='device addr', required=False)
     parser.add_argument('-p', '--price', type=int, nargs='+', default=[0, 100, 1000], help='for prices')
     args = parser.parse_args()
-    main(spider_map.get(args.name, SpiderBase)(keyword=args.keyword, prices=args.price))
+    main(spider_map.get(args.name, SpiderBase)(keyword=args.keyword, addr=args.device, prices=args.price))
