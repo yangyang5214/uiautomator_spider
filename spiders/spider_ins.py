@@ -14,7 +14,10 @@ class SpiderIns(SpiderBase):
 
     page_list_xpath = 'com.instagram.android:id/image_button'
 
-    page_limit = 10  # 滑动多少页
+    page_limit = 20  # 最大滑动多少页 (限制最大爬取量)
+
+    skip_flag = 3  # 出现多少次 就多滑动几页
+    swipe_flag = 1  # 下滑多少次
 
     def _process_keyword(self, start_price, end_price):
         # search btn
@@ -57,6 +60,12 @@ class SpiderIns(SpiderBase):
             index += 1
             self.swipe_down()
 
+            if self.skip_count >= self.skip_flag:
+                for _ in range(self.swipe_flag):
+                    self.swipe_down()
+                    self.sleep(2)
+                self.skip_count = 0  # 重置为 0
+
     def _process_item(self, price_str: str):
 
         like_num = ''
@@ -79,6 +88,7 @@ class SpiderIns(SpiderBase):
         base_dir = self.base_dir(price_str, product_id)
         if os.path.exists(self.get_result_path(base_dir)):
             logging.info("cache... skip\n")
+            self.skip_count += 1
             return True
 
         image_xpaths = [

@@ -35,6 +35,11 @@ class SpiderBase:
 
     cached_item = 0  # 提前退出条件，没达到 item_limit 的限制下
 
+    skip_count = 0
+
+    skip_flag = 3  # 出现多少次 就多滑动几页
+    swipe_flag = 1  # 下滑多少次
+
     search_keyword_xpath = None
     search_keyword_confirm_xpath = None
     page_list_xpath = None
