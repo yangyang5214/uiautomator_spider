@@ -133,7 +133,7 @@ class SpiderDu(SpiderBase):
             log.info("image index {}".format(i))
             self.swipe_left()
             image_name = os.path.join(base_dir, str(i - image_size_start) + '.jpg')
-            elm = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/itemPullLayout"]')
+            elm = self.xpath('//*[@resource-id="com.shizhuang.duapp:id/pullLayout"]')
             if elm.exists:
                 elm.screenshot().save(image_name)
                 self.sleep_random()
