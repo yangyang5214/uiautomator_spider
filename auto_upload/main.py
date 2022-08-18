@@ -9,29 +9,28 @@ base_dir = os.path.join(user_root_home, "uiautomator_spider")
 import shutil
 import requests
 
-server_ip = ''  # ip 地址
+server_ip = ''
 
+today_str = datetime.today().strftime('%Y%m%d')
 
 def main():
     print(f': {base_dir}')
     os.chdir(base_dir)
 
-    find_day = datetime.today().strftime('%Y/%m/%d')
-    find_cmd = f'forfiles /s /m *json  /D +{find_day} /c "cmd /c echo @path"'
-    print(f"cmd: cd {base_dir} && {find_cmd}")
+    find_cmd = f"find {base_dir} -name '*json' -mtime -100"
+    print(f"cmd: {find_cmd}")
     out, _ = subprocess.Popen(find_cmd, stdout=subprocess.PIPE, shell=True).communicate()
     try:
         out = out.decode('utf-8').strip()
     except:
         out = out.decode('gbk').strip()
-    all_files = out.split("\r\n")
+    all_files = out.split("\n")
     if not all_files:
         print("no file found, exit!")
         return
 
     print(f'all_files: {all_files}')
 
-    today_str = datetime.today().strftime('%Y%m%d')
     for file_path in all_files:
         file_path = file_path.strip('"')
         dir_name = os.path.dirname(file_path)
@@ -47,14 +46,14 @@ def main():
         print(f"move {dir_name} to {target_dir}")
         shutil.move(dir_name, target_dir)
 
-    print('start upload file .....')
-
     os.chdir(os.path.join(os.path.expanduser('~')))
     shutil.make_archive(today_str, 'zip', root_dir=today_str)
-    upload(os.path.join(user_root_home, today_str + ".zip"))
 
 
 def upload(filepath: str):
+    if not os.path.exists(filepath):
+        return
+    print('start upload file .....')
     try:
         resp = requests.post(f'http://{server_ip}:9991/spider/upload', auth=('up_agent', 'hdd_20220804~'), files={
             'file': open(filepath, 'rb'),
@@ -69,3 +68,5 @@ def upload(filepath: str):
 
 if __name__ == '__main__':
     main()
+    exit()
+    upload(os.path.join(user_root_home, today_str + ".zip"))

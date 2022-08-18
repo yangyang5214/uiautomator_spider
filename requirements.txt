@@ -1,2 +1,2 @@
-PyQt5==5.15.6
 uiautomator2==2.16.14
+shutil
