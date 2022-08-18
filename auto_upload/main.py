@@ -13,6 +13,7 @@ server_ip = ''
 
 today_str = datetime.today().strftime('%Y%m%d')
 
+
 def main():
     print(f': {base_dir}')
     os.chdir(base_dir)
