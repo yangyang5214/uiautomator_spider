@@ -61,16 +61,16 @@ class SpiderXhs(SpiderBase):
 
         self.sleep_random(10, 20)  # 排序后 等待页面加载
 
-        logging.info("click 图文。。。")
-
-        # 筛选图文
-        tu_wen = self.xpath('//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]')
-        if tu_wen.exists:
-            tu_wen.click()
-            self.sleep_random(10, 20)
-        else:
-            logging.info("点击 **筛选 图文** 出错")
-            exit()
+        # logging.info("click 图文。。。")
+        #
+        # # 筛选图文
+        # tu_wen = self.xpath('//*[@resource-id="com.xingin.xhs:id/dcy"]/android.view.ViewGroup[1]/android.widget.LinearLayout[2]/android.widget.TextView[1]')
+        # if tu_wen.exists:
+        #     tu_wen.click()
+        #     self.sleep_random(10, 20)
+        # else:
+        #     logging.info("点击 **筛选 图文** 出错")
+        #     exit()
 
         self.process_page_list(sort_key, None)
 
@@ -137,14 +137,16 @@ class SpiderXhs(SpiderBase):
         logging.info("start process_item ...")
         self.sleep_random()
 
-        buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/c_c"]')
-        if not buk.exists or not buk.text.startswith('说点什么'):
-            logging.error("可能是 视频内容 skip")
-            return -1
+        # buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/c_c"]')
+        # if not buk.exists or not buk.text.startswith('说点什么'):
+        #     logging.error("可能是 视频内容 skip")
+        #     return -1
 
         title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/e04"]')
         if not title:
             logging.error("获取 title 失败, skip {}".format(self.screen_debug()))
+            logging.info("保留截图 返回")
+            self.app.screenshot()
             return
 
         like_count = self.xpath_text(like_xpath)
