@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
+import time
 
 from spiders.spider_base import SpiderBase, log as logging
 
@@ -137,21 +138,25 @@ class SpiderXhs(SpiderBase):
         logging.info("start process_item ...")
         self.sleep_random()
 
-        # buk = self.xpath('//*[@resource-id="com.xingin.xhs:id/c_c"]')
-        # if not buk.exists or not buk.text.startswith('说点什么'):
-        #     logging.error("可能是 视频内容 skip")
-        #     return -1
+        is_video = False
 
         title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/e04"]')
         if not title:
-            logging.error("获取 title 失败, skip {}".format(self.screen_debug()))
-            logging.info("保留截图 返回")
-            self.app.screenshot()
-            return
+            is_video = True
+            title = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/noteContentText"]')
 
-        like_count = self.xpath_text(like_xpath)
-        collect_count = self.xpath_text(collect_xpath)
-        comment_count = self.xpath_text(comment_xpath)
+        if not title:
+            logging.error("parse title failed")
+            exit(-1)
+
+        if is_video:
+            like_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/din"]')
+            collect_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dij"]')
+            comment_count = self.xpath_text('//*[@resource-id="com.xingin.xhs:id/dil"]')
+        else:
+            like_count = self.xpath_text(like_xpath)
+            collect_count = self.xpath_text(collect_xpath)
+            comment_count = self.xpath_text(comment_xpath)
 
         product_id = self.get_product_id(title)
         base_dir = self.base_dir(price_str, product_id)
@@ -163,28 +168,37 @@ class SpiderXhs(SpiderBase):
             self.skip_count += 1
             return
 
-        image_size = 1
-        image_xpath = self.xpath('//*[@resource-id="com.xingin.xhs:id/noteContentLayout"]/android.widget.LinearLayout[1]/android.widget.ImageView')
-        if image_xpath.exists:
-            image_size = len(image_xpath.all())
+        if is_video:
+            for index in range(5):
+                time.sleep(1)
+                image_name = os.path.join(base_dir, '{}.jpg'.format(index))
+                self.app.screenshot().save(image_name)
+        else:
+            image_size = 1
+            image_xpath = self.xpath('//*[@resource-id="com.xingin.xhs:id/noteContentLayout"]/android.widget.LinearLayout[1]/android.widget.ImageView')
+            if image_xpath.exists:
+                image_size = len(image_xpath.all())
 
-        for index in range(image_size):
-            image_elm = self.xpath('//*[@resource-id="com.xingin.xhs:id/noteContentLayout"]/android.widget.FrameLayout[1]')
-            image_name = os.path.join(base_dir, '{}.jpg'.format(index))
-            if image_elm.exists:
-                image_elm.screenshot().save(image_name)
-            if index != image_size - 1:
-                self.swipe_left()
+            for index in range(image_size):
+                image_elm = self.xpath('//*[@resource-id="com.xingin.xhs:id/noteContentLayout"]/android.widget.FrameLayout[1]')
+                image_name = os.path.join(base_dir, '{}.jpg'.format(index))
+                if image_elm.exists:
+                    image_elm.screenshot().save(image_name)
+                if index != image_size - 1:
+                    self.swipe_left()
 
         logging.info("image save end ...")
 
-        # 不能放在前面，需要 swipe 获取
-        content = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/c79"]')
-        if not content:
-            logging.info("获取 content 失败, skip {}".format(self.screen_debug()))
+        content = ''
+        last_update = None
+        if not is_video:
+            # 不能放在前面，需要 swipe 获取
+            content = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/c79"]')
+            if not content:
+                logging.info("获取 content 失败, skip {}".format(self.screen_debug()))
 
-        last_update = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/dzt"]')
-        # auth_info = self.get_auth_info()
+            last_update = self.xpath_text_by_swipe('//*[@resource-id="com.xingin.xhs:id/dzt"]')
+            # auth_info = self.get_auth_info()
         data = {
             'title': title,
             'content': content,
